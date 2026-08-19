@@ -55,38 +55,87 @@ const parse = async (content, member, inviterData = {}) => {
  */
 const buildGreeting = async (member, type, config, inviterData) => {
   if (!config) return;
+
   let content;
 
-  // build content
-  if (config.content) content = await parse(config.content, member, inviterData);
+  // Content
+  if (config.content) {
+    content = await parse(config.content, member, inviterData);
+  }
 
-  // build embed
+  // Embed
   const embed = new EmbedBuilder();
+
+  // Warna
+  if (config.embed.color) {
+    embed.setColor(config.embed.color);
+  }
+
+  // Avatar user sebagai thumbnail
+  embed.setThumbnail(
+    member.user.displayAvatarURL({
+      dynamic: true,
+      size: 256,
+    })
+  );
+
+  // Deskripsi
   if (config.embed.description) {
-    const parsed = await parse(config.embed.description, member, inviterData);
-    embed.setDescription(parsed);
+    const parsed = await parse(
+      config.embed.description,
+      member,
+      inviterData
+    );
+
+    const divider = "────────────────────────────";
+
+    embed.setDescription(
+      `${parsed}\n\n${divider}`
+    );
   }
-  if (config.embed.color) embed.setColor(config.embed.color);
-  if (config.embed.thumbnail) embed.setThumbnail(member.user.displayAvatarURL());
-  if (config.embed.footer) {
-    const parsed = await parse(config.embed.footer, member, inviterData);
-    embed.setFooter({ text: parsed });
-  }
+
+  // Gambar / banner
   if (config.embed.image) {
-    const parsed = await parse(config.embed.image, member);
+    const parsed = await parse(
+      config.embed.image,
+      member,
+      inviterData
+    );
+
     embed.setImage(parsed);
   }
 
-  // set default message
-  if (!config.content && !config.embed.description && !config.embed.footer) {
+  // Footer
+  if (config.embed.footer) {
+    const parsed = await parse(
+      config.embed.footer,
+      member,
+      inviterData
+    );
+
+    embed.setFooter({
+      text: parsed,
+    });
+  }
+
+  // Default message
+  if (
+    !config.content &&
+    !config.embed.description &&
+    !config.embed.footer
+  ) {
     content =
       type === "WELCOME"
         ? `Welcome to the server, ${member.displayName} 🎉`
         : `${member.user.username} has left the server 👋`;
+
     return { content };
   }
 
-  return { content, embeds: [embed] };
+  return {
+    content,
+    embeds: [embed],
+  };
 };
 
 /**
