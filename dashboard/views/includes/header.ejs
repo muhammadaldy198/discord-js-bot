@@ -23,13 +23,13 @@
 
       <% if (typeof user !== "undefined" && user) { %>
 
-        <% if (user.avatar) { %>
-          <img
-            class="avatar"
-            src="<%= user.avatar %>"
-            alt="Avatar"
-          />
-        <% } %>
+        <% if (user.displayAvatar) { %>
+  <img
+    class="avatar"
+    src="<%= user.displayAvatar %>"
+    alt="<%= user.username || 'User' %>"
+  />
+<% } %>
 
         <div class="user-info">
           <strong>
