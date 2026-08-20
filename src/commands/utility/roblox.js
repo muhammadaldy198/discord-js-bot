@@ -3,12 +3,12 @@ const {
   ApplicationCommandOptionType,
 } = require("discord.js");
 
-const { getJson } = require("@helpers/HttpUtils");
 const { EMBED_COLORS, MESSAGES } = require("@root/config.js");
+const { getJson } = require("@helpers/HttpUtils.js");
 
 module.exports = {
   name: "roblox",
-  description: "Get Roblox user profile information",
+  description: "Get a Roblox user's profile",
   category: "UTILITY",
 
   botPermissions: ["EmbedLinks"],
@@ -34,142 +34,37 @@ module.exports = {
 
   async messageRun(message, args) {
     const username = args.join(" ").trim();
-    const response = await getRobloxProfile(username);
 
-    await message.safeReply(response);
+    if (!username) {
+      return message.safeReply("❌ Please provide a Roblox username.");
+    }
+
+    const response = await getRobloxProfile(username);
+    return message.safeReply(response);
   },
 
   async interactionRun(interaction) {
-    const username = interaction.options.getString("username", true);
-    const response = await getRobloxProfile(username);
+    const username = interaction.options.getString("username", true).trim();
 
-    await interaction.followUp(response);
+    const response = await getRobloxProfile(username);
+    return interaction.followUp(response);
   },
 };
 
 async function getRobloxProfile(username) {
   try {
-    // Find Roblox user by username
-    const search = await getJson(
-      `https://users.roblox.com/v1/usernames/users`,
+    /*
+     * Roblox username lookup
+     * POST /v1/usernames/users
+     */
+    const result = await getJson(
+      "https://users.roblox.com/v1/usernames/users",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        body: JSON.stringify({
-          usernames: [username],
-          excludeBannedUsers: false,
-        }),
-      }
-    );
-
-    if (!search.success || !search.data || !search.data.length) {
-      return "❌ Roblox user not found.";
-    }
-
-    const user = search.data[0];
-    const userId = user.id;
-
-    // Get complete profile
-    const profile = await getJson(
-      `https://users.roblox.com/v1/users/${userId}`
-    );
-
-    if (!profile.success || !profile.data) {
-      return MESSAGES.API_ERROR;
-    }
-
-    const data = profile.data;
-
-    const avatar = `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=420&height=420&format=png`;
-
-    const embed = new EmbedBuilder()
-const {
-  EmbedBuilder,
-  ApplicationCommandOptionType,
-} = require("discord.js");
-
-const { EMBED_COLORS, MESSAGES } = require("@root/config.js");
-
-module.exports = {
-  name: "roblox",
-  description: "Get Roblox user profile information",
-  category: "UTILITY",
-
-  botPermissions: ["EmbedLinks"],
-  cooldown: 5,
-
-  command: {
-    enabled: true,
-    usage: "<username>",
-    minArgsCount: 1,
-  },
-
-  slashCommand: {
-    enabled: true,
-    options: [
-      {
-        name: "username",
-        description: "Roblox username",
-        type: ApplicationCommandOptionType.String,
-        required: true,
-      },
-    ],
-  },
-
-  async messageRun(message, args) {
-    const username = args.join(" ").trim();
-    const response = await getRobloxProfile(username);
-
-    await message.safeReply(response);
-  },
-
-  async interactionRun(interaction) {
-    const username = interaction.options.getString("username", true);
-    const response = await getRobloxProfile(username);
-
-    await interaction.followUp(response);
-  },
-};
-
-async function robloxFetch(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      "User-Agent": "Mozilla/5.0 DiscordBot/1.0",
-      ...(options.headers || {}),
-    },
-  });
-
-  let data;
-
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
-
-  return {
-    ok: response.ok,
-    status: response.status,
-    data,
-  };
-}
-
-async function getRobloxProfile(username) {
-  try {
-    if (!username) {
-      return "❌ Please provide a Roblox username.";
-    }
-
-    // Roblox username lookup
-    const search = await robloxFetch(
-      "https://users.roblox.com/v1/usernames/users",
-      {
-        method: "POST",
         body: JSON.stringify({
           usernames: [username],
           excludeBannedUsers: false,
@@ -178,84 +73,105 @@ async function getRobloxProfile(username) {
     );
 
     console.log(
-      `[Roblox] Username: ${username} | Status: ${search.status}`
+      `[ROBLOX] Lookup "${username}" | success=${result.success} status=${result.status}`
     );
 
-    // Rate limit / API error
-    if (!search.ok) {
-      console.error("[Roblox] Lookup failed:", search.data);
+    if (!result.success) {
+      console.error("[ROBLOX] API error:", result);
 
-      if (search.status === 429) {
-        return "⏳ Roblox API sedang rate-limited. Coba lagi beberapa detik.";
+      if (result.status === 429) {
+        return "⏳ Roblox API sedang rate limit. Coba lagi beberapa detik.";
       }
 
-      if (search.status === 403) {
-        return "🚫 Roblox API menolak request dari server bot.";
-      }
-
-      if (search.status >= 500) {
-        return "⚠️ Roblox API sedang mengalami gangguan. Coba lagi nanti.";
-      }
-
-      return `⚠️ Roblox API error (HTTP ${search.status}).`;
+      return `❌ Roblox API error (HTTP ${result.status || "unknown"}).`;
     }
 
+    /*
+     * IMPORTANT:
+     *
+     * getJson() returns:
+     *
+     * result.data = Roblox response
+     *
+     * Roblox response:
+     *
+     * {
+     *   data: [...]
+     * }
+     *
+     * Jadi array user ada di result.data.data
+     */
     if (
-      !search.data ||
-      !Array.isArray(search.data.data) ||
-      search.data.data.length === 0
+      !result.data ||
+      !Array.isArray(result.data.data) ||
+      result.data.data.length === 0
     ) {
       return `❌ Roblox user **${username}** tidak ditemukan.`;
     }
 
-    const user = search.data.data[0];
+    const user = result.data.data[0];
     const userId = user.id;
 
-    // Get full profile
-    const profile = await robloxFetch(
-      `https://users.roblox.com/v1/users/${userId}`,
-      {
-        method: "GET",
-      }
+    /*
+     * Get complete user profile
+     */
+    const profileResult = await getJson(
+      `https://users.roblox.com/v1/users/${userId}`
     );
 
-    if (!profile.ok || !profile.data) {
-      console.error("[Roblox] Profile failed:", profile.status);
+    if (!profileResult.success || !profileResult.data) {
+      console.error("[ROBLOX] Profile API error:", profileResult);
 
-      if (profile.status === 429) {
-        return "⏳ Roblox API sedang rate-limited. Coba lagi beberapa detik.";
+      if (profileResult.status === 429) {
+        return "⏳ Roblox API sedang rate limit. Coba lagi beberapa detik.";
       }
 
-      return `⚠️ Gagal mengambil profile Roblox (HTTP ${profile.status}).`;
+      return `❌ Gagal mengambil profile Roblox (HTTP ${
+        profileResult.status || "unknown"
+      }).`;
     }
 
-    const data = profile.data;
+    const profile = profileResult.data;
 
-    const avatar =
+    /*
+     * Roblox avatar
+     */
+    const avatarUrl =
       `https://www.roblox.com/headshot-thumbnail/image` +
       `?userId=${userId}` +
       `&width=420` +
       `&height=420` +
       `&format=png`;
 
-    const createdTimestamp = data.created
-      ? Math.floor(new Date(data.created).getTime() / 1000)
-      : null;
+    /*
+     * Account creation date
+     */
+    let created = "Unknown";
+
+    if (profile.created) {
+      const timestamp = Math.floor(
+        new Date(profile.created).getTime() / 1000
+      );
+
+      if (!Number.isNaN(timestamp)) {
+        created = `<t:${timestamp}:D>`;
+      }
+    }
 
     const embed = new EmbedBuilder()
       .setColor(EMBED_COLORS.BOT_EMBED)
-      .setTitle(`Roblox Profile — ${data.displayName || data.name}`)
+      .setTitle(`Roblox Profile — ${profile.displayName || profile.name}`)
       .setURL(`https://www.roblox.com/users/${userId}/profile`)
-      .setThumbnail(avatar)
+      .setThumbnail(avatarUrl)
       .addFields(
         {
           name: "👤 Username",
-          value: `\`${data.name}\``,
+          value: `\`${profile.name}\``,
           inline: true,
         },
         {
           name: "✨ Display Name",
-          value: `\`${data.displayName || data.name}\``,
+          value: `\`${profile.displayName || profile.name}\``,
           inline: true,
         },
         {
@@ -265,26 +181,25 @@ async function getRobloxProfile(username) {
         },
         {
           name: "📅 Created",
-          value: createdTimestamp
-            ? `<t:${createdTimestamp}:D>`
-            : "Unknown",
+          value: created,
           inline: true,
         },
         {
           name: "🚫 Banned",
-          value: data.isBanned ? "Yes" : "No",
+          value: profile.isBanned ? "Yes" : "No",
           inline: true,
         }
       );
 
-    if (data.description) {
-      embed.setDescription(
-        data.description.length > 1000
-          ? `${data.description.slice(0, 997)}...`
-          : data.description
-      );
+    if (profile.description) {
+      const description =
+        profile.description.length > 1000
+          ? `${profile.description.substring(0, 997)}...`
+          : profile.description;
+
+      embed.setDescription(description);
     } else {
-      embed.setDescription("No Roblox profile description.");
+      embed.setDescription("No profile description.");
     }
 
     embed.setFooter({
@@ -295,37 +210,8 @@ async function getRobloxProfile(username) {
       embeds: [embed],
     };
   } catch (error) {
-    console.error("[Roblox] Unexpected error:", error);
+    console.error("[ROBLOX] Unexpected error:", error);
 
     return MESSAGES.API_ERROR || "❌ Failed to fetch Roblox profile.";
-  }
-}
-  inline: true,
-        },
-        {
-          name: "🚫 Banned",
-          value: data.isBanned ? "Yes" : "No",
-          inline: true,
-        },
-      );
-
-    if (data.description) {
-      embed.setDescription(
-        data.description.length > 1000
-          ? `${data.description.slice(0, 997)}...`
-          : data.description
-      );
-    } else {
-      embed.setDescription("No Roblox profile description.");
-    }
-
-    embed.setFooter({
-      text: `Roblox User ID: ${userId}`,
-    });
-
-    return { embeds: [embed] };
-  } catch (error) {
-    console.error("Roblox profile error:", error);
-    return "❌ Failed to fetch Roblox profile.";
   }
 }
