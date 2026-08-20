@@ -1,14 +1,17 @@
 const {
   EmbedBuilder,
   ApplicationCommandOptionType,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 
 const { getJson } = require("@helpers/HttpUtils");
-const { EMBED_COLORS, MESSAGES } = require("@root/config.js");
+const { EMBED_COLORS } = require("@root/config.js");
 
 module.exports = {
   name: "roblox",
-  description: "Get Roblox user profile information",
+  description: "View a Roblox user's profile",
   category: "UTILITY",
 
   botPermissions: ["EmbedLinks"],
@@ -25,7 +28,7 @@ module.exports = {
     options: [
       {
         name: "username",
-        description: "Roblox username",
+        description: "The Roblox username to look up",
         type: ApplicationCommandOptionType.String,
         required: true,
       },
@@ -53,13 +56,14 @@ module.exports = {
   },
 };
 
+/**
+ * Get Roblox profile
+ */
 async function getRobloxProfile(username) {
   try {
-    /*
-     * ==========================================
-     * 1. FIND ROBLOX USER
-     * ==========================================
-     */
+    // ==========================================
+    // 1. FIND USER BY USERNAME
+    // ==========================================
 
     const search = await getJson(
       "https://users.roblox.com/v1/usernames/users",
@@ -77,150 +81,158 @@ async function getRobloxProfile(username) {
     );
 
     console.log(
-      `[ROBLOX] Username: ${username} | Success: ${search.success}`
+      `[ROBLOX] Lookup "${username}" | success=${search.success} | status=${search.status}`
     );
 
     if (!search.success) {
       console.error("[ROBLOX] Username lookup failed:", search);
 
-      return (
-        MESSAGES.API_ERROR ||
-        "❌ Roblox API error. Please try again later."
-      );
+      if (search.status === 429) {
+        return "⏳ Roblox API sedang rate limit. Coba lagi beberapa detik.";
+      }
+
+      return `❌ Roblox API error (HTTP ${
+        search.status || "unknown"
+      }).`;
     }
 
-    /*
-     * Roblox response is:
-     *
-     * {
-     *   data: [
-     *     {
-     *       requestedUsername: "...",
-     *       hasVerifiedBadge: false,
-     *       id: 123456,
-     *       name: "...",
-     *       displayName: "..."
-     *     }
-     *   ]
-     * }
-     *
-     * getJson() returns that object inside search.data
-     *
-     * Therefore the actual array is:
-     *
-     * search.data.data
-     */
+    // Roblox response:
+    //
+    // {
+    //   data: [
+    //     {
+    //       id: 123,
+    //       name: "username",
+    //       displayName: "DisplayName"
+    //     }
+    //   ]
+    // }
+    //
+    // Karena getJson() membungkus response,
+    // array berada di search.data.data.
 
     if (
       !search.data ||
       !Array.isArray(search.data.data) ||
       search.data.data.length === 0
     ) {
-      return `❌ Roblox user **${username}** not found.`;
+      return `❌ Roblox user **${username}** tidak ditemukan.`;
     }
 
     const user = search.data.data[0];
     const userId = user.id;
 
-    /*
-     * ==========================================
-     * 2. GET FULL PROFILE
-     * ==========================================
-     */
+    // ==========================================
+    // 2. GET FULL USER PROFILE
+    // ==========================================
 
-    const profile = await getJson(
+    const profileResult = await getJson(
       `https://users.roblox.com/v1/users/${userId}`
     );
 
-    if (!profile.success || !profile.data) {
-      console.error("[ROBLOX] Profile lookup failed:", profile);
-
-      return (
-        MESSAGES.API_ERROR ||
-        "❌ Failed to fetch Roblox profile."
+    if (!profileResult.success || !profileResult.data) {
+      console.error(
+        "[ROBLOX] Profile lookup failed:",
+        profileResult
       );
+
+      if (profileResult.status === 429) {
+        return "⏳ Roblox API sedang rate limit. Coba lagi beberapa detik.";
+      }
+
+      return `❌ Gagal mengambil profile Roblox (HTTP ${
+        profileResult.status || "unknown"
+      }).`;
     }
 
-    const data = profile.data;
+    const profile = profileResult.data;
 
-    /*
-     * ==========================================
-     * 3. GET ROBLOX AVATAR
-     * ==========================================
-     *
-     * Use Roblox Thumbnails API instead of the
-     * old headshot-thumbnail URL.
-     */
+    // ==========================================
+    // 3. GET LARGE AVATAR
+    // ==========================================
 
     let avatarUrl = null;
 
-    const thumbnail = await getJson(
+    const thumbnailResult = await getJson(
       `https://thumbnails.roblox.com/v1/users/avatar-headshot` +
         `?userIds=${userId}` +
-        `&size=420x420` +
+        `&size=720x720` +
         `&format=Png` +
         `&isCircular=false`
     );
 
     if (
-      thumbnail.success &&
-      thumbnail.data &&
-      Array.isArray(thumbnail.data.data) &&
-      thumbnail.data.data.length > 0
+      thumbnailResult.success &&
+      thumbnailResult.data &&
+      Array.isArray(thumbnailResult.data.data) &&
+      thumbnailResult.data.data.length > 0
     ) {
-      const thumbnailData = thumbnail.data.data[0];
+      const thumbnail = thumbnailResult.data.data[0];
 
-      if (thumbnailData.state === "Completed") {
-        avatarUrl = thumbnailData.imageUrl;
+      if (thumbnail.state === "Completed") {
+        avatarUrl = thumbnail.imageUrl;
       }
     }
 
-    /*
-     * ==========================================
-     * 4. CREATE EMBED
-     * ==========================================
-     */
+    // ==========================================
+    // 4. ACCOUNT AGE
+    // ==========================================
+
+    let createdDate = null;
+    let accountAge = "Unknown";
+
+    if (profile.created) {
+      createdDate = new Date(profile.created);
+
+      if (!Number.isNaN(createdDate.getTime())) {
+        accountAge = calculateAccountAge(createdDate);
+      }
+    }
+
+    // ==========================================
+    // 5. ACCOUNT STATUS
+    // ==========================================
+
+    const bannedStatus = profile.isBanned
+      ? "🔴 Banned"
+      : "🟢 Not Banned";
+
+    const accountStatus = profile.isBanned
+      ? "🔴 Banned"
+      : "🟢 Active";
+
+    // ==========================================
+    // 6. CREATE EMBED
+    // ==========================================
 
     const embed = new EmbedBuilder()
       .setColor(EMBED_COLORS.BOT_EMBED)
-      .setTitle(
-        `Roblox Profile — ${data.displayName || data.name}`
+      .setTitle("◈ Roblox Profile")
+      .setDescription(
+        `Profile information for **${profile.name}**`
       )
       .setURL(
         `https://www.roblox.com/users/${userId}/profile`
       );
 
-    /*
-     * Add avatar only if Roblox returned one.
-     */
+    // Large avatar
     if (avatarUrl) {
-      embed.setThumbnail(avatarUrl);
+      embed.setImage(avatarUrl);
     }
 
-    /*
-     * Account creation date
-     */
-    let created = "Unknown";
-
-    if (data.created) {
-      const timestamp = Math.floor(
-        new Date(data.created).getTime() / 1000
-      );
-
-      if (!Number.isNaN(timestamp)) {
-        created = `<t:${timestamp}:D>`;
-      }
-    }
+    // ==========================================
+    // PROFILE INFORMATION
+    // ==========================================
 
     embed.addFields(
       {
         name: "👤 Username",
-        value: `\`${data.name}\``,
+        value: `\`${profile.name}\``,
         inline: true,
       },
       {
         name: "✨ Display Name",
-        value: `\`${data.displayName || data.name}\``,
+        value: `\`${profile.displayName || profile.name}\``,
         inline: true,
       },
       {
@@ -229,48 +241,116 @@ async function getRobloxProfile(username) {
         inline: true,
       },
       {
-        name: "📅 Created",
-        value: created,
+        name: "📅 Account Age",
+        value: createdDate
+          ? `${accountAge}\nCreated <t:${Math.floor(
+              createdDate.getTime() / 1000
+            )}:R>`
+          : "Unknown",
         inline: true,
       },
       {
-        name: "🚫 Banned",
-        value: data.isBanned ? "Yes" : "No",
+        name: "🚩 Account Status",
+        value: accountStatus,
+        inline: true,
+      },
+      {
+        name: "🛡️ Banned Status",
+        value: bannedStatus,
         inline: true,
       }
     );
 
-    /*
-     * Profile description
-     */
-    if (data.description) {
-      embed.setDescription(
-        data.description.length > 1000
-          ? `${data.description.slice(0, 997)}...`
-          : data.description
-      );
-    } else {
-      embed.setDescription(
-        "No Roblox profile description."
-      );
-    }
+    // ==========================================
+    // ABOUT
+    // ==========================================
 
-    /*
-     * Footer
-     */
-    embed.setFooter({
-      text: `Roblox User ID: ${userId}`,
+    const description = profile.description?.trim();
+
+    embed.addFields({
+      name: "💬 About",
+      value: description
+        ? description.length > 1024
+          ? `${description.slice(0, 1021)}...`
+          : description
+        : "No Roblox profile description.",
+      inline: false,
     });
+
+    // ==========================================
+    // FOOTER
+    // ==========================================
+
+    embed.setFooter({
+      text: `Roblox • User ID: ${userId}`,
+    });
+
+    embed.setTimestamp();
+
+    // ==========================================
+    // VIEW PROFILE BUTTON
+    // ==========================================
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel("View Profile")
+        .setStyle(ButtonStyle.Link)
+        .setURL(
+          `https://www.roblox.com/users/${userId}/profile`
+        )
+    );
 
     return {
       embeds: [embed],
+      components: [row],
     };
   } catch (error) {
-    console.error(
-      "[ROBLOX] Unexpected error:",
-      error
+    console.error("[ROBLOX] Unexpected error:", error);
+
+    return "❌ Terjadi kesalahan saat mengambil data Roblox.";
+  }
+}
+
+/**
+ * Calculate account age
+ */
+function calculateAccountAge(createdDate) {
+  const now = new Date();
+
+  let years = now.getFullYear() - createdDate.getFullYear();
+  let months = now.getMonth() - createdDate.getMonth();
+  let days = now.getDate() - createdDate.getDate();
+
+  if (days < 0) {
+    months--;
+
+    const previousMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      0
     );
 
-    return "❌ Failed to fetch Roblox profile.";
+    days += previousMonth.getDate();
   }
+
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  const parts = [];
+
+  if (years > 0) {
+    parts.push(`${years} year${years !== 1 ? "s" : ""}`);
+  }
+
+  if (months > 0) {
+    parts.push(`${months} month${months !== 1 ? "s" : ""}`);
+  }
+
+  if (days > 0 || parts.length === 0) {
+    parts.push(`${days} day${days !== 1 ? "s" : ""}`);
+  }
+
+  return parts.join(", ");
 }
