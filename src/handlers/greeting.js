@@ -1,5 +1,4 @@
 const {
-  EmbedBuilder,
   ContainerBuilder,
   TextDisplayBuilder,
   SectionBuilder,
@@ -9,28 +8,38 @@ const {
   SeparatorBuilder,
   MessageFlags,
 } = require("discord.js");
+
 const { getSettings } = require("@schemas/Guild");
 
 /**
- * @param {string} content
- * @param {import('discord.js').GuildMember} member
- * @param {Object} inviterData
+ * Parse welcome variables
  */
 const parse = async (content, member, inviterData = {}) => {
   const inviteData = {};
 
-  const getEffectiveInvites = (inviteData = {}) =>
-    inviteData.tracked + inviteData.added - inviteData.fake - inviteData.left || 0;
+  const getEffectiveInvites = (data = {}) =>
+    (data.tracked || 0) +
+    (data.added || 0) -
+    (data.fake || 0) -
+    (data.left || 0);
+
+  if (!content) return "";
 
   if (content.includes("{inviter:")) {
     const inviterId = inviterData.member_id || "NA";
+
     if (inviterId !== "VANITY" && inviterId !== "NA") {
       try {
         const inviter = await member.client.users.fetch(inviterId);
+
         inviteData.name = inviter.username;
         inviteData.tag = inviter.tag;
       } catch (ex) {
-        member.client.logger.error(`Parsing inviterId: ${inviterId}`, ex);
+        member.client.logger.error(
+          `Parsing inviterId: ${inviterId}`,
+          ex
+        );
+
         inviteData.name = "NA";
         inviteData.tag = "NA";
       }
@@ -42,47 +51,67 @@ const parse = async (content, member, inviterData = {}) => {
       inviteData.tag = inviterId;
     }
   }
+
   return content
     .replaceAll(/\\n/g, "\n")
     .replaceAll(/{server}/g, member.guild.name)
-    .replaceAll(/{count}/g, member.guild.memberCount)
+    .replaceAll(/{count}/g, String(member.guild.memberCount))
     .replaceAll(/{member:nick}/g, member.displayName)
     .replaceAll(/{member:name}/g, member.user.username)
     .replaceAll(/{member:dis}/g, member.user.discriminator)
     .replaceAll(/{member:tag}/g, member.user.tag)
     .replaceAll(/{member:mention}/g, member.toString())
-    .replaceAll(/{member:avatar}/g, member.displayAvatarURL())
-    .replaceAll(/{inviter:name}/g, inviteData.name)
-    .replaceAll(/{inviter:tag}/g, inviteData.tag)
-    .replaceAll(/{invites}/g, getEffectiveInvites(inviterData.invite_data));
+    .replaceAll(
+      /{member:avatar}/g,
+      member.user.displayAvatarURL({
+        extension: "png",
+        size: 512,
+      })
+    )
+    .replaceAll(/{inviter:name}/g, inviteData.name || "NA")
+    .replaceAll(/{inviter:tag}/g, inviteData.tag || "NA")
+    .replaceAll(
+      /{invites}/g,
+      String(getEffectiveInvites(inviterData.invite_data))
+    );
 };
 
 /**
- * @param {import('discord.js').GuildMember} member
- * @param {"WELCOME"|"FAREWELL"} type
- * @param {Object} config
- * @param {Object} inviterData
+ * Build Welcome / Farewell card
  */
-const buildGreeting = async (member, type, config, inviterData = {}) => {
+const buildGreeting = async (
+  member,
+  type,
+  config,
+  inviterData = {}
+) => {
   if (!config) return;
 
   const embed = config.embed || {};
 
   // ==============================
-  // TITLE
-  // ==============================
-  const title = `Welcome to ${member.guild.name}`;
-
-  // ==============================
   // DESCRIPTION
   // ==============================
-  const description = embed.description
-    ? await parse(embed.description, member, inviterData)
-    : `Hey ${member}, thanks for joining us!`;
+
+  let description;
+
+  if (embed.description) {
+    description = await parse(
+      embed.description,
+      member,
+      inviterData
+    );
+  } else {
+    description =
+      type === "WELCOME"
+        ? `Welcome to the server, ${member.displayName} 🎉`
+        : `${member.user.username} has left the server 👋`;
+  }
 
   // ==============================
   // FOOTER
   // ==============================
+
   const footer = embed.footer
     ? await parse(embed.footer, member, inviterData)
     : "©2026 LFAMILIA";
@@ -90,12 +119,12 @@ const buildGreeting = async (member, type, config, inviterData = {}) => {
   // ==============================
   // CONTAINER
   // ==============================
+
   const container = new ContainerBuilder();
 
-  // Warna accent dari setting
+  // Accent color
   if (embed.color) {
     const color = String(embed.color).replace("#", "");
-
     const colorNumber = parseInt(color, 16);
 
     if (!Number.isNaN(colorNumber)) {
@@ -106,6 +135,7 @@ const buildGreeting = async (member, type, config, inviterData = {}) => {
   // ==============================
   // BANNER
   // ==============================
+
   if (embed.image) {
     const bannerURL = await parse(
       embed.image,
@@ -114,19 +144,20 @@ const buildGreeting = async (member, type, config, inviterData = {}) => {
     );
 
     if (bannerURL) {
-      const banner = new MediaGalleryBuilder().addItems(
-        new MediaGalleryItemBuilder()
-          .setURL(bannerURL)
-          .setDescription("Welcome banner")
+      container.addMediaGalleryComponents(
+        new MediaGalleryBuilder().addItems(
+          new MediaGalleryItemBuilder()
+            .setURL(bannerURL)
+            .setDescription("Welcome banner")
+        )
       );
-
-      container.addMediaGalleryComponents(banner);
     }
   }
 
   // ==============================
-  // GARIS TIPIS DI BAWAH BANNER
+  // GARIS DI BAWAH BANNER
   // ==============================
+
   container.addSeparatorComponents(
     new SeparatorBuilder()
       .setDivider(true)
@@ -134,12 +165,13 @@ const buildGreeting = async (member, type, config, inviterData = {}) => {
   );
 
   // ==============================
-  // TITLE + AVATAR
+  // DESCRIPTION + AVATAR
   // ==============================
-  const titleSection = new SectionBuilder()
+
+  const contentSection = new SectionBuilder()
     .addTextDisplayComponents(
       new TextDisplayBuilder()
-        .setContent(`## ${title}`)
+        .setContent(description)
     )
     .setThumbnailAccessory(
       new ThumbnailBuilder()
@@ -154,19 +186,12 @@ const buildGreeting = async (member, type, config, inviterData = {}) => {
         )
     );
 
-  container.addSectionComponents(titleSection);
+  container.addSectionComponents(contentSection);
 
   // ==============================
-  // DESCRIPTION
+  // GARIS SEBELUM FOOTER
   // ==============================
-  container.addTextDisplayComponents(
-    new TextDisplayBuilder()
-      .setContent(description)
-  );
 
-  // ==============================
-  // GARIS TIPIS SEBELUM FOOTER
-  // ==============================
   container.addSeparatorComponents(
     new SeparatorBuilder()
       .setDivider(true)
@@ -176,14 +201,16 @@ const buildGreeting = async (member, type, config, inviterData = {}) => {
   // ==============================
   // FOOTER
   // ==============================
+
   container.addTextDisplayComponents(
     new TextDisplayBuilder()
       .setContent(`-# ${footer}`)
   );
 
   // ==============================
-  // COMPONENTS V2 MESSAGE
+  // COMPONENTS V2
   // ==============================
+
   return {
     flags: MessageFlags.IsComponentsV2,
     components: [container],
@@ -192,43 +219,68 @@ const buildGreeting = async (member, type, config, inviterData = {}) => {
 
 /**
  * Send welcome message
- * @param {import('discord.js').GuildMember} member
- * @param {Object} inviterData
  */
-async function sendWelcome(member, inviterData = {}) {
-  const config = (await getSettings(member.guild))?.welcome;
+async function sendWelcome(
+  member,
+  inviterData = {}
+) {
+  const config =
+    (await getSettings(member.guild))?.welcome;
+
   if (!config || !config.enabled) return;
 
-  // check if channel exists
-  const channel = member.guild.channels.cache.get(config.channel);
+  const channel =
+    member.guild.channels.cache.get(
+      config.channel
+    );
+
   if (!channel) return;
 
-  // build welcome message
-  const response = await buildGreeting(member, "WELCOME", config, inviterData);
+  const response = await buildGreeting(
+    member,
+    "WELCOME",
+    config,
+    inviterData
+  );
 
-  channel.safeSend(response);
+  if (!response) return;
+
+  await channel.safeSend(response);
 }
 
 /**
  * Send farewell message
- * @param {import('discord.js').GuildMember} member
- * @param {Object} inviterData
  */
-async function sendFarewell(member, inviterData = {}) {
-  const config = (await getSettings(member.guild))?.farewell;
+async function sendFarewell(
+  member,
+  inviterData = {}
+) {
+  const config =
+    (await getSettings(member.guild))?.farewell;
+
   if (!config || !config.enabled) return;
 
-  // check if channel exists
-  const channel = member.guild.channels.cache.get(config.channel);
+  const channel =
+    member.guild.channels.cache.get(
+      config.channel
+    );
+
   if (!channel) return;
 
-  // build farewell message
-  const response = await buildGreeting(member, "FAREWELL", config, inviterData);
+  const response = await buildGreeting(
+    member,
+    "FAREWELL",
+    config,
+    inviterData
+  );
 
-  channel.safeSend(response);
+  if (!response) return;
+
+  await channel.safeSend(response);
 }
 
 module.exports = {
+  parse,
   buildGreeting,
   sendWelcome,
   sendFarewell,
