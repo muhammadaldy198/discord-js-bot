@@ -5,17 +5,25 @@
 
   <style>
     :root {
-      --lf-bg: #0b0d12;
-      --lf-panel: #11141b;
-      --lf-panel-2: #171b24;
-      --lf-border: rgba(255,255,255,.08);
-      --lf-text: #f4f6fb;
-      --lf-muted: #8f98aa;
+      --lf-bg: #080a0f;
+      --lf-bg-soft: #0d1017;
+      --lf-card: #11151e;
+      --lf-card-2: #171c26;
+      --lf-border: rgba(255,255,255,.075);
+      --lf-border-hover: rgba(88,101,242,.45);
+      --lf-text: #f5f7fb;
+      --lf-muted: #8992a5;
+      --lf-muted-2: #687184;
       --lf-accent: #5865f2;
       --lf-accent-hover: #4752c4;
       --lf-success: #23c483;
       --lf-danger: #ed4245;
-      --lf-shadow: 0 20px 60px rgba(0,0,0,.25);
+      --lf-radius: 18px;
+      --lf-shadow: 0 18px 55px rgba(0,0,0,.25);
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     html,
@@ -28,22 +36,25 @@
       color: var(--lf-text);
     }
 
-    /*
-     * Keep the original includes so the existing authentication,
-     * header, sidebar and footer logic continues to work.
-     * The visual layer below overrides the old AdminLTE styling.
-     */
-
     .content-wrapper {
+      min-height: calc(100vh - 50px) !important;
       background:
         radial-gradient(
-          circle at 85% 0%,
-          rgba(88,101,242,.12),
+          circle at 85% -5%,
+          rgba(88,101,242,.16),
           transparent 32%
         ),
+        radial-gradient(
+          circle at 10% 40%,
+          rgba(88,101,242,.045),
+          transparent 28%
+        ),
         var(--lf-bg) !important;
-      min-height: calc(100vh - 50px) !important;
     }
+
+    /* =========================================
+       PAGE HEADER
+    ========================================= */
 
     .content-header {
       padding: 28px 30px 12px !important;
@@ -53,8 +64,8 @@
       margin: 0 !important;
       color: var(--lf-text) !important;
       font-size: 26px !important;
-      font-weight: 800 !important;
-      letter-spacing: -.03em;
+      font-weight: 850 !important;
+      letter-spacing: -.035em;
     }
 
     .breadcrumb {
@@ -66,101 +77,161 @@
 
     .breadcrumb a {
       color: var(--lf-muted) !important;
+      text-decoration: none !important;
+    }
+
+    .breadcrumb a:hover {
+      color: var(--lf-text) !important;
     }
 
     .breadcrumb .active {
       color: var(--lf-text) !important;
     }
 
+    /* =========================================
+       MAIN PAGE
+    ========================================= */
+
     .lf-page {
+      width: 100%;
       max-width: 1500px;
       margin: 0 auto;
-      padding: 10px 30px 45px;
+      padding: 10px 30px 50px;
     }
 
-    /* HERO */
+    /* =========================================
+       SERVER HERO
+    ========================================= */
 
     .lf-hero {
       position: relative;
       overflow: hidden;
+      min-height: 150px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
-      padding: 25px;
+      gap: 25px;
+      padding: 28px;
       margin-bottom: 22px;
       border: 1px solid var(--lf-border);
-      border-radius: 20px;
+      border-radius: 22px;
       background:
         linear-gradient(
           135deg,
-          rgba(88,101,242,.15),
-          rgba(255,255,255,.025)
+          rgba(88,101,242,.16),
+          rgba(255,255,255,.025) 55%,
+          rgba(255,255,255,.015)
         ),
-        var(--lf-panel);
+        var(--lf-card);
       box-shadow: var(--lf-shadow);
+    }
+
+    .lf-hero::before {
+      content: "";
+      position: absolute;
+      width: 330px;
+      height: 330px;
+      right: -130px;
+      top: -190px;
+      border-radius: 50%;
+      background: rgba(88,101,242,.16);
+      filter: blur(25px);
+      pointer-events: none;
     }
 
     .lf-hero::after {
       content: "";
       position: absolute;
-      width: 220px;
-      height: 220px;
-      right: -90px;
-      top: -110px;
+      width: 180px;
+      height: 180px;
+      left: 38%;
+      bottom: -160px;
       border-radius: 50%;
-      background: rgba(88,101,242,.15);
-      filter: blur(15px);
+      background: rgba(88,101,242,.06);
+      filter: blur(20px);
+      pointer-events: none;
     }
 
     .lf-hero-content {
       position: relative;
       z-index: 2;
+      min-width: 0;
       display: flex;
       align-items: center;
-      gap: 17px;
-      min-width: 0;
+      gap: 18px;
+    }
+
+    .lf-server-icon,
+    .lf-server-fallback {
+      width: 72px;
+      height: 72px;
+      flex: 0 0 72px;
+      border-radius: 20px;
     }
 
     .lf-server-icon {
-      width: 66px;
-      height: 66px;
-      flex: 0 0 66px;
-      border-radius: 18px;
       object-fit: cover;
-      background: var(--lf-panel-2);
-      border: 1px solid var(--lf-border);
-      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      background: var(--lf-card-2);
+      border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 15px 35px rgba(0,0,0,.3);
     }
 
     .lf-server-fallback {
       display: grid;
       place-items: center;
-      width: 66px;
-      height: 66px;
-      flex: 0 0 66px;
-      border-radius: 18px;
-      background: var(--lf-accent);
+      background: linear-gradient(
+        135deg,
+        var(--lf-accent),
+        #7983ff
+      );
       color: white;
-      font-size: 26px;
-      font-weight: 800;
+      font-size: 28px;
+      font-weight: 850;
+      box-shadow: 0 15px 35px rgba(88,101,242,.25);
     }
 
-    .lf-hero h1 {
+    .lf-server-meta {
+      min-width: 0;
+    }
+
+    .lf-server-meta h1 {
       margin: 0;
-      color: var(--lf-text);
-      font-size: 23px;
-      font-weight: 800;
-      letter-spacing: -.025em;
-      white-space: nowrap;
+      max-width: 650px;
       overflow: hidden;
+      color: var(--lf-text);
+      font-size: 25px;
+      font-weight: 850;
+      letter-spacing: -.035em;
+      white-space: nowrap;
       text-overflow: ellipsis;
     }
 
-    .lf-hero p {
-      margin: 5px 0 0;
+    .lf-server-meta p {
+      margin: 6px 0 0;
       color: var(--lf-muted);
       font-size: 13px;
+    }
+
+    .lf-server-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 11px;
+      padding: 5px 9px;
+      border: 1px solid rgba(35,196,131,.16);
+      border-radius: 999px;
+      background: rgba(35,196,131,.06);
+      color: #6de1b1;
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .lf-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--lf-success);
+      box-shadow: 0 0 10px rgba(35,196,131,.65);
     }
 
     .lf-back {
@@ -168,26 +239,30 @@
       z-index: 3;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      padding: 10px 14px;
+      padding: 11px 15px;
       border: 1px solid var(--lf-border);
       border-radius: 11px;
-      background: rgba(255,255,255,.04);
+      background: rgba(255,255,255,.035);
       color: var(--lf-text) !important;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 750;
       text-decoration: none !important;
-      transition: .18s ease;
       white-space: nowrap;
+      transition: .18s ease;
     }
 
     .lf-back:hover {
-      background: rgba(255,255,255,.08);
-      border-color: rgba(88,101,242,.45);
+      border-color: var(--lf-border-hover);
+      background: rgba(88,101,242,.1);
+      color: white !important;
       transform: translateY(-1px);
     }
 
-    /* GRID */
+    /* =========================================
+       SETTINGS GRID
+    ========================================= */
 
     .lf-grid {
       display: grid;
@@ -197,55 +272,66 @@
 
     .lf-card {
       overflow: hidden;
+      min-width: 0;
       border: 1px solid var(--lf-border);
-      border-radius: 18px;
-      background: var(--lf-panel);
-      box-shadow: 0 12px 40px rgba(0,0,0,.18);
+      border-radius: var(--lf-radius);
+      background: var(--lf-card);
+      box-shadow: 0 12px 42px rgba(0,0,0,.18);
       transition:
-        border-color .18s ease,
-        transform .18s ease,
-        box-shadow .18s ease;
+        transform .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease;
     }
 
     .lf-card:hover {
-      border-color: rgba(255,255,255,.13);
+      border-color: rgba(255,255,255,.12);
+      box-shadow: 0 18px 55px rgba(0,0,0,.25);
       transform: translateY(-2px);
-      box-shadow: 0 18px 50px rgba(0,0,0,.25);
     }
 
     .lf-card.full {
       grid-column: 1 / -1;
     }
 
+    /* =========================================
+       CARD HEADER
+    ========================================= */
+
     .lf-card-head {
       display: flex;
       align-items: center;
       gap: 13px;
-      padding: 19px 20px;
+      padding: 18px 20px;
       border-bottom: 1px solid var(--lf-border);
       background: rgba(255,255,255,.018);
     }
 
     .lf-card-icon {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
       display: grid;
       place-items: center;
-      width: 38px;
-      height: 38px;
-      flex: 0 0 38px;
-      border-radius: 11px;
-      background: rgba(88,101,242,.13);
-      color: #8790ff;
+      border: 1px solid rgba(88,101,242,.14);
+      border-radius: 12px;
+      background: rgba(88,101,242,.11);
+      color: #8992ff;
       font-size: 17px;
     }
 
-    .lf-card-head h2 {
+    .lf-card-title {
+      min-width: 0;
+    }
+
+    .lf-card-title h2 {
       margin: 0;
       color: var(--lf-text);
       font-size: 15px;
       font-weight: 800;
+      letter-spacing: -.01em;
     }
 
-    .lf-card-head p {
+    .lf-card-title p {
       margin: 3px 0 0;
       color: var(--lf-muted);
       font-size: 11px;
@@ -255,7 +341,9 @@
       padding: 20px;
     }
 
-    /* FORM */
+    /* =========================================
+       FORM
+    ========================================= */
 
     .lf-field {
       margin-bottom: 18px;
@@ -265,36 +353,46 @@
       margin-bottom: 0;
     }
 
-    .lf-field label {
+    .lf-field > label:not(.lf-check) {
       display: block;
       margin-bottom: 8px;
       color: #dfe3ec;
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 750;
     }
 
     .lf-input,
     .lf-select {
       width: 100%;
-      min-height: 42px;
+      min-height: 43px;
       padding: 10px 12px;
       border: 1px solid var(--lf-border) !important;
-      border-radius: 10px !important;
+      border-radius: 11px !important;
       outline: none !important;
-      background: var(--lf-panel-2) !important;
+      background: var(--lf-card-2) !important;
       color: var(--lf-text) !important;
       box-shadow: none !important;
-      transition: .18s ease;
+      font-size: 12px;
+      transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background .18s ease;
     }
 
-    .lf-input::placeholder {
-      color: #697286;
+    .lf-input:hover,
+    .lf-select:hover {
+      border-color: rgba(255,255,255,.13) !important;
     }
 
     .lf-input:focus,
     .lf-select:focus {
       border-color: rgba(88,101,242,.75) !important;
-      box-shadow: 0 0 0 3px rgba(88,101,242,.12) !important;
+      background: #191e29 !important;
+      box-shadow: 0 0 0 3px rgba(88,101,242,.11) !important;
+    }
+
+    .lf-input::placeholder {
+      color: var(--lf-muted-2);
     }
 
     .lf-select option {
@@ -303,10 +401,13 @@
     }
 
     .lf-select[multiple] {
-      min-height: 145px;
+      min-height: 150px;
+      padding: 8px;
     }
 
-    /* TOGGLES */
+    /* =========================================
+       TOGGLE ROWS
+    ========================================= */
 
     .lf-checks {
       display: grid;
@@ -319,11 +420,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 15px;
+      width: 100%;
       margin: 0 !important;
-      padding: 12px 13px;
+      padding: 13px 14px;
       border: 1px solid var(--lf-border);
-      border-radius: 11px;
-      background: rgba(255,255,255,.025);
+      border-radius: 12px;
+      background: rgba(255,255,255,.02);
       cursor: pointer;
       transition: .18s ease;
     }
@@ -334,66 +436,112 @@
     }
 
     .lf-check-text {
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
     }
 
     .lf-check-title {
-      color: #e8ebf3;
+      color: #e9ecf3;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 750;
     }
 
     .lf-check-description {
       color: var(--lf-muted);
       font-size: 10px;
       font-weight: 400;
+      line-height: 1.45;
     }
 
     .lf-check input {
       position: absolute;
+      width: 1px;
+      height: 1px;
       opacity: 0;
       pointer-events: none;
     }
 
     .lf-switch {
       position: relative;
-      width: 40px;
-      height: 22px;
-      flex: 0 0 40px;
-      border-radius: 99px;
-      background: #292e39;
+      width: 42px;
+      height: 23px;
+      flex: 0 0 42px;
+      border-radius: 999px;
+      background: #292f3b;
       transition: .2s ease;
     }
 
     .lf-switch::after {
       content: "";
       position: absolute;
-      top: 3px;
       left: 3px;
-      width: 16px;
-      height: 16px;
+      top: 3px;
+      width: 17px;
+      height: 17px;
       border-radius: 50%;
-      background: #8d95a5;
+      background: #858d9d;
+      box-shadow: 0 2px 5px rgba(0,0,0,.25);
       transition: .2s ease;
     }
 
     .lf-check input:checked + .lf-switch {
       background: var(--lf-accent);
+      box-shadow: 0 0 15px rgba(88,101,242,.22);
     }
 
     .lf-check input:checked + .lf-switch::after {
-      left: 21px;
+      left: 22px;
       background: white;
     }
 
-    /* CARD FOOTER */
+    /* =========================================
+       AUTOMOD
+    ========================================= */
+
+    .lf-automod-grid {
+      display: grid;
+      grid-template-columns: minmax(250px,.8fr) minmax(0,1.2fr);
+      gap: 22px;
+    }
+
+    .lf-automod-panel {
+      padding: 15px;
+      border: 1px solid var(--lf-border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.018);
+    }
+
+    .lf-panel-title {
+      margin-bottom: 13px;
+      color: #dfe3ec;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .lf-automod-toggles {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 9px;
+    }
+
+    .lf-automod-toggles .lf-check {
+      min-height: 58px;
+      padding: 11px;
+    }
+
+    /* =========================================
+       FOOTER / SAVE
+    ========================================= */
 
     .lf-card-footer {
       display: flex;
       align-items: center;
       justify-content: flex-end;
+      gap: 10px;
       padding: 14px 20px;
       border-top: 1px solid var(--lf-border);
       background: rgba(255,255,255,.012);
@@ -403,38 +551,32 @@
       display: inline-flex !important;
       align-items: center;
       justify-content: center;
-      min-width: 105px;
-      padding: 10px 16px !important;
+      min-width: 112px;
+      padding: 10px 17px !important;
       border: 0 !important;
       border-radius: 10px !important;
       background: var(--lf-accent) !important;
       color: white !important;
-      font-size: 12px !important;
+      font-size: 11px !important;
       font-weight: 800 !important;
-      box-shadow: none !important;
+      box-shadow: 0 8px 20px rgba(88,101,242,.15) !important;
       transition: .18s ease;
     }
 
     .lf-save:hover {
       background: var(--lf-accent-hover) !important;
+      box-shadow: 0 10px 25px rgba(88,101,242,.25) !important;
       transform: translateY(-1px);
     }
 
-    /* AUTOMOD */
-
-    .lf-automod-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 18px;
+    .lf-help {
+      margin-top: 7px;
+      color: var(--lf-muted-2);
+      font-size: 10px;
+      line-height: 1.5;
     }
 
-    .lf-automod-toggles {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 10px;
-    }
-
-    /* REMOVE OLD ADMINLTE VISUAL BOXES */
+    /* Remove old AdminLTE visual boxes */
 
     .box,
     .box-header,
@@ -445,9 +587,12 @@
       box-shadow: none !important;
     }
 
-    /* RESPONSIVE */
+    /*
+=========================================
+       RESPONSIVE
+    ========================================= */
 
-    @media (max-width: 1000px) {
+    @media (max-width: 1100px) {
       .lf-grid {
         grid-template-columns: 1fr;
       }
@@ -455,11 +600,19 @@
       .lf-card.full {
         grid-column: auto;
       }
+
+      .lf-automod-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 760px) {
       .content-header {
         padding: 20px 15px 10px !important;
+      }
+
+      .content-header h3 {
+        font-size: 22px !important;
       }
 
       .lf-page {
@@ -469,22 +622,64 @@
       .lf-hero {
         align-items: flex-start;
         flex-direction: column;
-        padding: 18px;
+        padding: 19px;
       }
 
-      .lf-hero h1 {
-        max-width: 220px;
+      .lf-hero-content {
+        width: 100%;
+      }
+
+      .lf-server-icon,
+      .lf-server-fallback {
+        width: 60px;
+        height: 60px;
+        flex-basis: 60px;
+        border-radius: 17px;
+      }
+
+      .lf-server-meta h1 {
+        max-width: 230px;
         font-size: 19px;
+      }
+
+      .lf-server-meta p {
+        font-size: 11px;
       }
 
       .lf-back {
         width: 100%;
-        justify-content: center;
       }
 
-      .lf-automod-grid,
+      .lf-card-body {
+        padding: 16px;
+      }
+
+      .lf-card-footer {
+        padding: 13px 16px;
+      }
+
       .lf-automod-toggles {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .lf-hero-content {
+        align-items: flex-start;
+      }
+
+      .lf-server-meta h1 {
+        max-width: 185px;
+      }
+
+      .lf-card-head {
+        padding: 16px;
+      }
+
+      .lf-card-icon {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
       }
     }
   </style>
@@ -505,7 +700,8 @@
       <ol class="breadcrumb">
         <li>
           <a href="/">
-            <i class="fa fa-home"></i> Selector
+            <i class="fa fa-home"></i>
+            Selector
           </a>
         </li>
 
@@ -515,7 +711,9 @@
           </a>
         </li>
 
-        <li class="active">Basic</li>
+        <li class="active">
+          Basic
+        </li>
       </ol>
     </section>
 
@@ -523,7 +721,10 @@
 
       <div class="lf-page">
 
-        <!-- SERVER HERO -->
+        <!--
+=====================================
+             SERVER HERO
+        ====================================== -->
 
         <div class="lf-hero">
 
@@ -547,42 +748,60 @@
 
             <% } %>
 
-            <div>
+            <div class="lf-server-meta">
+
               <h1 title="<%= guild.name %>">
                 <%= guild.name %>
               </h1>
 
               <p>
-                Configure your server's basic LFamiliaHelper settings.
+                Manage and configure LFamiliaHelper for this server.
               </p>
+
+              <div class="lf-server-status">
+                <span class="lf-status-dot"></span>
+                Bot Connected
+              </div>
+
             </div>
 
           </div>
 
-          <a class="lf-back" href="<%=`/manage/${guild.id}/`%>">
+          <a
+            class="lf-back"
+            href="<%=`/manage/${guild.id}/`%>"
+          >
             <i class="fa fa-arrow-left"></i>
             Back to Dashboard
           </a>
 
         </div>
 
-        <!-- SETTINGS -->
+
+        <!-- =====================================
+             SETTINGS GRID
+        ====================================== -->
 
         <div class="lf-grid">
 
-          <!-- GENERAL -->
+
+          <!-- ===================================
+               GENERAL
+          ==================================== -->
 
           <div class="lf-card">
 
             <div class="lf-card-head">
+
               <div class="lf-card-icon">
                 <i class="fa fa-sliders"></i>
               </div>
 
-              <div>
+              <div class="lf-card-title">
                 <h2>General</h2>
                 <p>Core bot settings for this server</p>
               </div>
+
             </div>
 
             <form
@@ -594,7 +813,10 @@
               <div class="lf-card-body">
 
                 <div class="lf-field">
-                  <label>Command Prefix</label>
+
+                  <label>
+                    Command Prefix
+                  </label>
 
                   <input
                     type="text"
@@ -603,13 +825,16 @@
                     placeholder="<%= guild.prefix %>"
                     autocomplete="off"
                   />
+
                 </div>
+
 
                 <div class="lf-checks">
 
                   <label class="lf-check">
 
                     <span class="lf-check-text">
+
                       <span class="lf-check-title">
                         Flag Translation
                       </span>
@@ -617,6 +842,7 @@
                       <span class="lf-check-description">
                         Automatically translate country flags.
                       </span>
+
                     </span>
 
                     <% if(guild.flag_translation?.enabled) { %>
@@ -640,9 +866,11 @@
 
                   </label>
 
+
                   <label class="lf-check">
 
                     <span class="lf-check-text">
+
                       <span class="lf-check-title">
                         Invite Tracking
                       </span>
@@ -650,6 +878,7 @@
                       <span class="lf-check-description">
                         Track server invite usage.
                       </span>
+
                     </span>
 
                     <% if(guild.invite.tracking) { %>
@@ -678,6 +907,7 @@
               </div>
 
               <div class="lf-card-footer">
+
                 <button
                   type="submit"
                   name="basicUpdate"
@@ -685,25 +915,31 @@
                 >
                   Save Changes
                 </button>
+
               </div>
 
             </form>
 
           </div>
 
-          <!-- STATISTICS -->
+
+          <!-- ===================================
+               STATISTICS
+          ==================================== -->
 
           <div class="lf-card">
 
             <div class="lf-card-head">
+
               <div class="lf-card-icon">
                 <i class="fa fa-bar-chart"></i>
               </div>
 
-              <div>
+              <div class="lf-card-title">
                 <h2>Statistics</h2>
                 <p>XP and level tracking configuration</p>
               </div>
+
             </div>
 
             <form
@@ -719,6 +955,7 @@
                   <label class="lf-check">
 
                     <span class="lf-check-text">
+
                       <span class="lf-check-title">
                         XP Tracking
                       </span>
@@ -726,6 +963,7 @@
                       <span class="lf-check-description">
                         Enable member ranking and XP tracking.
                       </span>
+
                     </span>
 
                     <% if(guild.stats.enabled) { %>
@@ -751,9 +989,12 @@
 
                 </div>
 
+
                 <div class="lf-field">
 
-                  <label>Levelup Message</label>
+                  <label>
+                    Levelup Message
+                  </label>
 
                   <input
                     type="text"
@@ -764,9 +1005,12 @@
 
                 </div>
 
+
                 <div class="lf-field">
 
-                  <label>Levelup Channel</label>
+                  <label>
+                    Levelup Channel
+                  </label>
 
                   <select
                     class="lf-select"
@@ -780,18 +1024,29 @@
                       </option>
 
                       <% guild.channels.cache
-                        .filter((ch) => ch.type === 0 && ch.id !== guild.stats.xp.channel)
+                        .filter((ch) =>
+                          ch.type === 0 &&
+                          ch.id !== guild.stats.xp.channel
+                        )
                         .forEach((ch) => { %>
 
-                        <option>#<%= ch.name %></option>
+                        <option>
+                          #<%= ch.name %>
+                        </option>
 
                       <% }); %>
 
-                      <option>No channel</option>
+                      <option>
+                        No channel
+                      </option>
 
                     <% } else { %>
 
-                      <option disabled selected value>
+                      <option
+                        disabled
+                        selected
+                        value
+                      >
                         -- select an option --
                       </option>
 
@@ -799,7 +1054,9 @@
                         .filter((ch) => ch.type === 0)
                         .forEach((ch) => { %>
 
-                        <option>#<%= ch.name %></option>
+                        <option>
+                          #<%= ch.name %>
+                        </option>
 
                       <% }); %>
 
@@ -812,6 +1069,7 @@
               </div>
 
               <div class="lf-card-footer">
+
                 <button
                   type="submit"
                   name="statsUpdate"
@@ -819,25 +1077,30 @@
                 >
                   Save Changes
                 </button>
+
               </div>
 
             </form>
 
           </div>
 
-          <!-- TICKET -->
+<!-- ===================================
+               TICKET
+          ==================================== -->
 
           <div class="lf-card">
 
             <div class="lf-card-head">
+
               <div class="lf-card-icon">
                 <i class="fa fa-ticket"></i>
               </div>
 
-              <div>
+              <div class="lf-card-title">
                 <h2>Ticket</h2>
                 <p>Configure support ticket behavior</p>
               </div>
+
             </div>
 
             <form
@@ -850,7 +1113,9 @@
 
                 <div class="lf-field">
 
-                  <label>Ticket Limit</label>
+                  <label>
+                    Ticket Limit
+                  </label>
 
                   <input
                     type="number"
@@ -862,9 +1127,12 @@
 
                 </div>
 
+
                 <div class="lf-field">
 
-                  <label>Ticket Logs</label>
+                  <label>
+                    Ticket Logs
+                  </label>
 
                   <select
                     class="lf-select"
@@ -878,18 +1146,29 @@
                       </option>
 
                       <% guild.channels.cache
-                        .filter((ch) => ch.type === 0 && ch.id !== guild.ticket.log_channel)
+                        .filter((ch) =>
+                          ch.type === 0 &&
+                          ch.id !== guild.ticket.log_channel
+                        )
                         .forEach((ch) => { %>
 
-                        <option>#<%= ch.name %></option>
+                        <option>
+                          #<%= ch.name %>
+                        </option>
 
                       <% }); %>
 
-                      <option>No channel</option>
+                      <option>
+                        No channel
+                      </option>
 
                     <% } else { %>
 
-                      <option disabled selected value>
+                      <option
+                        disabled
+                        selected
+                        value
+                      >
                         -- select an option --
                       </option>
 
@@ -897,7 +1176,9 @@
                         .filter((ch) => ch.type === 0)
                         .forEach((ch) => { %>
 
-                        <option>#<%= ch.name %></option>
+                        <option>
+                          #<%= ch.name %>
+                        </option>
 
                       <% }); %>
 
@@ -910,6 +1191,7 @@
               </div>
 
               <div class="lf-card-footer">
+
                 <button
                   type="submit"
                   name="ticketUpdate"
@@ -917,25 +1199,31 @@
                 >
                   Save Changes
                 </button>
+
               </div>
 
             </form>
 
           </div>
 
-          <!-- MODERATION -->
+
+          <!-- ===================================
+               MODERATION
+          ==================================== -->
 
           <div class="lf-card">
 
             <div class="lf-card-head">
+
               <div class="lf-card-icon">
                 <i class="fa fa-shield"></i>
               </div>
 
-              <div>
+              <div class="lf-card-title">
                 <h2>Moderation</h2>
                 <p>Warnings and moderation logs</p>
               </div>
+
             </div>
 
             <form
@@ -948,7 +1236,9 @@
 
                 <div class="lf-field">
 
-                  <label>Max Warnings</label>
+                  <label>
+                    Max Warnings
+                  </label>
 
                   <input
                     type="number"
@@ -960,9 +1250,12 @@
 
                 </div>
 
+
                 <div class="lf-field">
 
-                  <label>Max Warnings Action</label>
+                  <label>
+                    Max Warnings Action
+                  </label>
 
                   <select
                     class="lf-select"
@@ -989,9 +1282,12 @@
 
                 </div>
 
+
                 <div class="lf-field">
 
-                  <label>Moderation Logs</label>
+                  <label>
+                    Moderation Logs
+                  </label>
 
                   <select
                     class="lf-select"
@@ -1005,18 +1301,29 @@
                       </option>
 
                       <% guild.channels.cache
-                        .filter((ch) => ch.type === 0 && ch.id !== guild.modlog_channel)
+                        .filter((ch) =>
+                          ch.type === 0 &&
+                          ch.id !== guild.modlog_channel
+                        )
                         .forEach((ch) => { %>
 
-                        <option>#<%= ch.name %></option>
+                        <option>
+                          #<%= ch.name %>
+                        </option>
 
                       <% }); %>
 
-                      <option>No channel</option>
+                      <option>
+                        No channel
+                      </option>
 
                     <% } else { %>
 
-                      <option disabled selected value>
+                      <option
+                        disabled
+                        selected
+                        value
+                      >
                         -- select an option --
                       </option>
 
@@ -1024,7 +1331,9 @@
                         .filter((ch) => ch.type === 0)
                         .forEach((ch) => { %>
 
-                        <option>#<%= ch.name %></option>
+                        <option>
+                          #<%= ch.name %>
+                        </option>
 
                       <% }); %>
 
@@ -1037,6 +1346,7 @@
               </div>
 
               <div class="lf-card-footer">
+
                 <button
                   type="submit"
                   name="modUpdate"
@@ -1044,25 +1354,32 @@
                 >
                   Save Changes
                 </button>
+
               </div>
 
             </form>
 
           </div>
 
-          <!-- AUTOMOD -->
+<!-- ===================================
+               AUTOMOD
+          ==================================== -->
 
           <div class="lf-card full">
 
             <div class="lf-card-head">
+
               <div class="lf-card-icon">
                 <i class="fa fa-lock"></i>
               </div>
 
-              <div>
+              <div class="lf-card-title">
                 <h2>Auto Moderation</h2>
-                <p>Protect your server from spam, links and unwanted content</p>
+                <p>
+                  Protect your server from spam, links and unwanted content
+                </p>
               </div>
+
             </div>
 
             <form
@@ -1075,11 +1392,19 @@
 
                 <div class="lf-automod-grid">
 
-                  <div>
+                  <!-- AUTOMOD LIMITS -->
+
+                  <div class="lf-automod-panel">
+
+                    <div class="lf-panel-title">
+                      Limits & Actions
+                    </div>
 
                     <div class="lf-field">
 
-                      <label>Max Strikes</label>
+                      <label>
+                        Max Strikes
+                      </label>
 
                       <input
                         type="number"
@@ -1091,9 +1416,12 @@
 
                     </div>
 
+
                     <div class="lf-field">
 
-                      <label>Max Strikes Action</label>
+                      <label>
+                        Max Strikes Action
+                      </label>
 
                       <select
                         class="lf-select"
@@ -1120,9 +1448,12 @@
 
                     </div>
 
+
                     <div class="lf-field">
 
-                      <label>Max Lines</label>
+                      <label>
+                        Max Lines
+                      </label>
 
                       <input
                         type="number"
@@ -1136,20 +1467,28 @@
 
                   </div>
 
-                  <div>
 
-                    <label style="display:block;margin-bottom:8px;color:#dfe3ec;font-size:12px;font-weight:700;">
+                  <!-- PROTECTION -->
+
+                  <div class="lf-automod-panel">
+
+                    <div class="lf-panel-title">
                       Protection Features
-                    </label>
+                    </div>
 
                     <div class="lf-automod-toggles">
+
+
+                      <!-- ANTI ATTACHMENTS -->
 
                       <label class="lf-check">
 
                         <span class="lf-check-text">
+
                           <span class="lf-check-title">
                             Anti Attachments
                           </span>
+
                         </span>
 
                         <% if(guild.automod.anti_attachments) { %>
@@ -1173,12 +1512,17 @@
 
                       </label>
 
+
+                      <!-- ANTI INVITES -->
+
                       <label class="lf-check">
 
                         <span class="lf-check-text">
+
                           <span class="lf-check-title">
                             Anti Invites
                           </span>
+
                         </span>
 
                         <% if(guild.automod.anti_invites) { %>
@@ -1202,12 +1546,17 @@
 
                       </label>
 
+
+                      <!-- ANTI LINKS -->
+
                       <label class="lf-check">
 
                         <span class="lf-check-text">
+
                           <span class="lf-check-title">
                             Anti Links
                           </span>
+
                         </span>
 
                         <% if(guild.automod.anti_links) { %>
@@ -1231,12 +1580,17 @@
 
                       </label>
 
+
+                      <!-- ANTI SPAM -->
+
                       <label class="lf-check">
 
                         <span class="lf-check-text">
+
                           <span class="lf-check-title">
                             Anti Spam
                           </span>
+
                         </span>
 
                         <% if(guild.automod.anti_spam) { %>
@@ -1260,12 +1614,17 @@
 
                       </label>
 
+
+                      <!-- ANTI GHOSTPING -->
+
                       <label class="lf-check">
 
                         <span class="lf-check-text">
+
                           <span class="lf-check-title">
                             Anti Ghostping
                           </span>
+
                         </span>
 
                         <% if(guild.automod.anti_ghostping) { %>
@@ -1289,12 +1648,17 @@
 
                       </label>
 
+
+                      <!-- ANTI MASSMENTION -->
+
                       <label class="lf-check">
 
                         <span class="lf-check-text">
+
                           <span class="lf-check-title">
                             Anti Massmention
                           </span>
+
                         </span>
 
                         <% if(guild.automod.anti_massmention) { %>
@@ -1324,9 +1688,17 @@
 
                 </div>
 
-                <div class="lf-field" style="margin-top:22px;">
 
-                  <label>Whitelisted Channels</label>
+                <!-- WHITELIST CHANNELS -->
+
+                <div
+                  class="lf-field"
+                  style="margin-top:22px;"
+                >
+
+                  <label>
+                    Whitelisted Channels
+                  </label>
 
                   <select
                     class="lf-select"
@@ -1356,7 +1728,7 @@
 
                   </select>
 
-                  <div style="margin-top:7px;color:#70798c;font-size:10px;">
+                  <div class="lf-help">
                     Hold CTRL / CMD to select multiple channels.
                   </div>
 
@@ -1364,7 +1736,9 @@
 
               </div>
 
+
               <div class="lf-card-footer">
+
                 <button
                   type="submit"
                   name="automodUpdate"
@@ -1372,6 +1746,7 @@
                 >
                   Save Changes
                 </button>
+
               </div>
 
             </form>
