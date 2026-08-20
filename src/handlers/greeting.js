@@ -63,88 +63,130 @@ const parse = async (content, member, inviterData = {}) => {
  * @param {Object} config
  * @param {Object} inviterData
  */
-const buildGreeting = async (member, type, config, inviterData) => {
+const buildGreeting = async (member, type, config, inviterData = {}) => {
   if (!config) return;
 
-  let content;
+  const embed = config.embed || {};
 
-  // Content
-  if (config.content) {
-    content = await parse(config.content, member, inviterData);
+  // ==============================
+  // TITLE
+  // ==============================
+  const title = `Welcome to ${member.guild.name}`;
+
+  // ==============================
+  // DESCRIPTION
+  // ==============================
+  const description = embed.description
+    ? await parse(embed.description, member, inviterData)
+    : `Hey ${member}, thanks for joining us!`;
+
+  // ==============================
+  // FOOTER
+  // ==============================
+  const footer = embed.footer
+    ? await parse(embed.footer, member, inviterData)
+    : "©2026 LFAMILIA";
+
+  // ==============================
+  // CONTAINER
+  // ==============================
+  const container = new ContainerBuilder();
+
+  // Warna accent dari setting
+  if (embed.color) {
+    const color = String(embed.color).replace("#", "");
+
+    const colorNumber = parseInt(color, 16);
+
+    if (!Number.isNaN(colorNumber)) {
+      container.setAccentColor(colorNumber);
+    }
   }
 
-  // Embed
-  const embed = new EmbedBuilder();
+  // ==============================
+  // BANNER
+  // ==============================
+  if (embed.image) {
+    const bannerURL = await parse(
+      embed.image,
+      member,
+      inviterData
+    );
 
-  // Warna
-  if (config.embed.color) {
-    embed.setColor(config.embed.color);
+    if (bannerURL) {
+      const banner = new MediaGalleryBuilder().addItems(
+        new MediaGalleryItemBuilder()
+          .setURL(bannerURL)
+          .setDescription("Welcome banner")
+      );
+
+      container.addMediaGalleryComponents(banner);
+    }
   }
 
-  // Avatar user sebagai thumbnail
-  embed.setThumbnail(
-    member.user.displayAvatarURL({
-      dynamic: true,
-      size: 256,
-    })
+  // ==============================
+  // GARIS TIPIS DI BAWAH BANNER
+  // ==============================
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(1)
   );
 
-  // Deskripsi
-  if (config.embed.description) {
-    const parsed = await parse(
-      config.embed.description,
-      member,
-      inviterData
+  // ==============================
+  // TITLE + AVATAR
+  // ==============================
+  const titleSection = new SectionBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder()
+        .setContent(`## ${title}`)
+    )
+    .setThumbnailAccessory(
+      new ThumbnailBuilder()
+        .setURL(
+          member.user.displayAvatarURL({
+            extension: "png",
+            size: 256,
+          })
+        )
+        .setDescription(
+          `${member.user.username}'s avatar`
+        )
     );
 
-    const divider = "────────────────────────────";
+  container.addSectionComponents(titleSection);
 
-    embed.setDescription(
-      `${parsed}\n\n${divider}`
-    );
-  }
+  // ==============================
+  // DESCRIPTION
+  // ==============================
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder()
+      .setContent(description)
+  );
 
-  // Gambar / banner
-  if (config.embed.image) {
-    const parsed = await parse(
-      config.embed.image,
-      member,
-      inviterData
-    );
+  // ==============================
+  // GARIS TIPIS SEBELUM FOOTER
+  // ==============================
+  container.addSeparatorComponents(
+    new SeparatorBuilder()
+      .setDivider(true)
+      .setSpacing(1)
+  );
 
-    embed.setImage(parsed);
-  }
+  // ==============================
+  // FOOTER
+  // ==============================
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder()
+      .setContent(`-# ${footer}`)
+  );
 
-  // Footer
-  if (config.embed.footer) {
-    const parsed = await parse(
-      config.embed.footer,
-      member,
-      inviterData
-    );
-
-    embed.setFooter({
-      text: parsed,
-    });
-  }
-
-  // Default message
-  if (
-    !config.content &&
-    !config.embed.description &&
-    !config.embed.footer
-  ) {
-    content =
-      type === "WELCOME"
-        ? `Welcome to the server, ${member.displayName} 🎉`
-        : `${member.user.username} has left the server 👋`;
-
-    return { content };
-  }
-
+  // ==============================
+  // COMPONENTS V2 MESSAGE
+  // ==============================
   return {
-    content,
-    embeds: [embed],
+    flags: MessageFlags.IsComponentsV2,
+    components: [container],
   };
 };
 
