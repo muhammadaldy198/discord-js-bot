@@ -13,6 +13,7 @@ const { getSettings } = require("@schemas/Guild");
  */
 module.exports = async (client, message) => {
   if (!message.guild || message.author.bot) return;
+  await stickyHandler.handleMessage(message);
   const settings = await getSettings(message.guild);
 
   // command handler
