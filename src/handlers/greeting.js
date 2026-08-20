@@ -1,4 +1,14 @@
-const { EmbedBuilder } = require("discord.js");
+const {
+  EmbedBuilder,
+  ContainerBuilder,
+  TextDisplayBuilder,
+  SectionBuilder,
+  ThumbnailBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
+  SeparatorBuilder,
+  MessageFlags,
+} = require("discord.js");
 const { getSettings } = require("@schemas/Guild");
 
 /**
