@@ -1,373 +1,504 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
+  <%- include('includes/head') %>
 
-    <title>Select Server | LFamiliaHelper</title>
+  <style>
+    :root {
+      --modern-bg: #080a0f;
+      --modern-card: rgba(20, 24, 34, 0.78);
+      --modern-card-hover: rgba(27, 32, 45, 0.95);
+      --modern-border: rgba(255, 255, 255, 0.08);
+      --modern-text: #f5f7ff;
+      --modern-muted: #9299aa;
+      --modern-accent: #5865f2;
+      --modern-accent-hover: #4752c4;
+    }
 
-    <link rel="icon" type="image/ico" href="/dist/img/atlanta.ico" />
-    <link rel="stylesheet" href="/css/modern.css" />
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+      background:
+        radial-gradient(
+          circle at 10% 0%,
+          rgba(88, 101, 242, 0.16),
+          transparent 32%
+        ),
+        radial-gradient(
+          circle at 90% 20%,
+          rgba(114, 137, 218, 0.08),
+          transparent 30%
+        ),
+        var(--modern-bg) !important;
+      color: var(--modern-text) !important;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif !important;
+    }
 
-    <style>
-      .server-page {
-        min-height: 100vh;
-        padding: 40px 24px;
-        background:
-          radial-gradient(
-            circle at top right,
-            rgba(88, 101, 242, 0.12),
-            transparent 35%
-          ),
-          var(--bg);
+    body {
+      overflow-x: hidden;
+    }
+
+    /* Hide old AdminLTE layout */
+    .main-header,
+    .main-sidebar,
+    .control-sidebar,
+    .main-footer {
+      display: none !important;
+    }
+
+    .content-wrapper {
+      min-height: 100vh !important;
+      margin-left: 0 !important;
+      background: transparent !important;
+    }
+
+    .modern-page {
+      width: 100%;
+      min-height: 100vh;
+      padding: 45px 25px 60px;
+    }
+
+    .modern-container {
+      width: 100%;
+      max-width: 1250px;
+      margin: auto;
+    }
+
+    /* Header */
+
+    .modern-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 38px;
+    }
+
+    .modern-title h1 {
+      margin: 0;
+      color: var(--modern-text);
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .modern-title p {
+      margin: 8px 0 0;
+      color: var(--modern-muted);
+      font-size: 14px;
+    }
+
+    .modern-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border: 1px solid var(--modern-border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--modern-muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .modern-badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3ba55d;
+      box-shadow: 0 0 12px rgba(59, 165, 93, 0.8);
+    }
+
+    /* Grid */
+
+    .modern-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    /* Card */
+
+    .server-card {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      padding: 0;
+      border: 1px solid var(--modern-border);
+      border-radius: 22px;
+      background: var(--modern-card);
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(18px);
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .server-card::before {
+      content: "";
+      position: absolute;
+      top: -90px;
+      right: -70px;
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      background: rgba(88, 101, 242, 0.14);
+      filter: blur(25px);
+      pointer-events: none;
+    }
+
+    .server-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(88, 101, 242, 0.42);
+      background: var(--modern-card-hover);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.3);
+    }
+
+    .server-card-inner {
+      position: relative;
+      z-index: 1;
+      padding: 23px;
+    }
+
+    /* Server icon */
+
+    .server-icon-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .server-icon {
+      width: 78px;
+      height: 78px;
+      display: block;
+      border-radius: 22px;
+      object-fit: cover;
+      background: #151924;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .server-icon-fallback {
+      width: 78px;
+      height: 78px;
+      display: grid;
+      place-items: center;
+      border-radius: 22px;
+      background: linear-gradient(
+        135deg,
+        #5865f2,
+        #7289da
+      );
+      color: white;
+      font-size: 30px;
+      font-weight: 800;
+      box-shadow: 0 12px 30px rgba(88, 101, 242, 0.3);
+    }
+
+    .server-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(88, 101, 242, 0.1);
+      color: #8c96ff;
+      font-size: 15px;
+    }
+
+    /* Text */
+
+    .server-name {
+      margin: 0;
+      overflow: hidden;
+      color: var(--modern-text);
+      font-size: 19px;
+      font-weight: 750;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .server-description {
+      margin-top: 7px;
+      color: var(--modern-muted);
+      font-size: 12px;
+    }
+
+    /* Footer */
+
+    .server-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 17px 23px;
+      border-top: 1px solid var(--modern-border);
+      background: rgba(0, 0, 0, 0.12);
+    }
+
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--modern-muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .server-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3ba55d;
+      box-shadow: 0 0 10px rgba(59, 165, 93, 0.7);
+    }
+
+    .manage-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 105px;
+      padding: 10px 15px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--modern-accent);
+      color: white !important;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none !important;
+      transition: 0.18s ease;
+    }
+
+    .manage-btn:hover {
+      background: var(--modern-accent-hover);
+      color: white !important;
+      transform: translateY(-1px);
+    }
+
+    .invite-btn {
+      background: #3ba55d;
+    }
+
+    .invite-btn:hover {
+      background: #2d8548;
+    }
+
+    /* Empty */
+
+    .empty-card {
+      padding: 70px 25px;
+      border: 1px dashed var(--modern-border);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.025);
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 70px;
+      height: 70px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 20px;
+      border-radius: 20px;
+      background: rgba(88, 101, 242, 0.12);
+      color: #8c96ff;
+      font-size: 28px;
+    }
+
+    .empty-card h2 {
+      margin: 0;
+      color: var(--modern-text);
+      font-size: 20px;
+      font-weight: 750;
+    }
+
+    .empty-card p {
+      max-width: 430px;
+      margin: 9px auto 0;
+      color: var(--modern-muted);
+      font-size: 13px;
+    }
+
+    /* Responsive */
+
+    @media (max-width: 1050px) {
+      .modern-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 650px) {
+      .modern-page {
+        padding: 25px 14px 40px;
       }
 
-      .server-container {
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
+      .modern-header {
+        margin-bottom: 25px;
       }
 
-      .server-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 35px;
+      .modern-title h1 {
+        font-size: 27px;
       }
 
-      .server-heading h1 {
-        margin: 0;
-        font-size: 32px;
-        font-weight: 850;
-        letter-spacing: -0.03em;
-      }
-
-      .server-heading p {
-        margin: 8px 0 0;
-        color: var(--muted);
-        font-size: 14px;
-      }
-
-      .user-pill {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px 8px 8px;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.035);
-      }
-
-      .user-pill img {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-
-      .user-pill strong {
-        display: block;
+      .modern-title p {
         font-size: 13px;
       }
 
-      .user-pill span {
-        display: block;
-        margin-top: 2px;
-        color: var(--muted);
-        font-size: 11px;
+      .modern-badge {
+        display: none;
       }
 
-      .server-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
+      .modern-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
       }
 
-      .server-card {
-        position: relative;
-        overflow: hidden;
-        min-height: 250px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 22px;
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        background:
-          linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.055),
-            rgba(255, 255, 255, 0.018)
-          );
-        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
-        transition:
-          transform 0.2s ease,
-          border-color 0.2s ease,
-          box-shadow 0.2s ease;
+      .server-card-inner {
+        padding: 20px;
       }
 
-      .server-card::before {
-        content: "";
-        position: absolute;
-        width: 180px;
-        height: 180px;
-        right: -80px;
-        top: -90px;
-        border-radius: 50%;
-        background: rgba(88, 101, 242, 0.14);
-        filter: blur(10px);
+      .server-footer {
+        padding: 15px 20px;
       }
-
-      .server-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(88, 101, 242, 0.45);
-        box-shadow: 0 25px 65px rgba(0, 0, 0, 0.28);
-      }
-
-      .server-info {
-        position: relative;
-        z-index: 1;
-      }
-
-      .server-icon {
-        width: 76px;
-        height: 76px;
-        margin-bottom: 18px;
-        border-radius: 22px;
-        object-fit: cover;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-      }
-
-      .server-icon-fallback {
-        width: 76px;
-        height: 76px;
-        margin-bottom: 18px;
-        display: grid;
-        place-items: center;
-        border-radius: 22px;
-        background: var(--accent);
-        color: white;
-        font-size: 30px;
-        font-weight: 800;
-      }
-
-      .server-name {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 800;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .server-id {
-        margin-top: 5px;
-        color: var(--muted);
-        font-size: 11px;
-      }
-
-      .server-bottom {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-top: 24px;
-      }
-
-      .server-members {
-        color: var(--muted);
-        font-size: 12px;
-      }
-
-      .manage-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 100px;
-        padding: 10px 15px;
-        border-radius: 11px;
-        background: var(--accent);
-        color: white;
-        font-size: 12px;
-        font-weight: 750;
-        transition: 0.18s ease;
-      }
-
-      .manage-button:hover {
-        background: var(--accent-hover);
-        transform: translateY(-1px);
-        color: white;
-      }
-
-      .empty-server {
-        padding: 70px 20px;
-        text-align: center;
-        border: 1px dashed var(--border);
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.02);
-      }
-
-      .empty-server-icon {
-        font-size: 40px;
-        margin-bottom: 15px;
-      }
-
-      .empty-server h2 {
-        margin: 0;
-        font-size: 20px;
-      }
-
-      .empty-server p {
-        color: var(--muted);
-        margin: 8px 0 0;
-      }
-
-      @media (max-width: 1000px) {
-        .server-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
-
-      @media (max-width: 650px) {
-        .server-page {
-          padding: 25px 14px;
-        }
-
-        .server-top {
-          align-items: flex-start;
-        }
-
-        .server-heading h1 {
-          font-size: 26px;
-        }
-
-        .user-pill {
-          display: none;
-        }
-
-        .server-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
-  </head>
+    }
+  </style>
 
   <body>
-    <main class="server-page">
-      <div class="server-container">
+    <div class="content-wrapper">
+      <main class="modern-page">
+        <div class="modern-container">
 
-        <div class="server-top">
-          <div class="server-heading">
-            <h1>Select a Server</h1>
-            <p>
-              Choose a Discord server to manage with LFamiliaHelper.
-            </p>
-          </div>
-
-          <% if (typeof user !== "undefined" && user) { %>
-            <div class="user-pill">
-              <% if (user.displayAvatar) { %>
-                <img
-                  src="<%= user.displayAvatar %>"
-                  alt="Avatar"
-                />
-              <% } %>
-
-              <div>
-                <strong>
-                  <%= user.username || "User" %>
-                </strong>
-                <span>Administrator</span>
-              </div>
+          <div class="modern-header">
+            <div class="modern-title">
+              <h1>Select a Server</h1>
+              <p>
+                Choose a Discord server to manage with LFamiliaHelper.
+              </p>
             </div>
+
+            <div class="modern-badge">
+              <span class="modern-badge-dot"></span>
+              Dashboard Online
+            </div>
+          </div>
+
+          <% if (user.displayedGuilds) { %>
+
+            <div class="modern-grid">
+
+              <% user.displayedGuilds.forEach(function(guild) { %>
+
+                <article class="server-card">
+
+                  <div class="server-card-inner">
+
+                    <div class="server-icon-wrap">
+
+                      <% if (guild.iconURL) { %>
+
+                        <img
+                          src="<%= guild.iconURL %>"
+                          alt="<%= guild.name %>"
+                          class="server-icon"
+                          loading="lazy"
+                        />
+
+                      <% } else { %>
+
+                        <div class="server-icon-fallback">
+                          <%= guild.name
+                            ? guild.name.charAt(0).toUpperCase()
+                            : "?" %>
+                        </div>
+
+                      <% } %>
+
+                      <div class="server-mark">
+                        <i class="fa fa-cog"></i>
+                      </div>
+
+                    </div>
+
+                    <h2
+                      class="server-name"
+                      title="<%= guild.name %>"
+                    >
+                      <%= guild.name %>
+                    </h2>
+
+                    <div class="server-description">
+                      Discord server
+                    </div>
+
+                  </div>
+
+                  <div class="server-footer">
+
+                    <div class="server-status">
+                      <span class="server-status-dot"></span>
+                      Available
+                    </div>
+
+                    <% if (guild.settingsUrl.includes('discordapp.com')) { %>
+
+                      <a
+                        href="<%= guild.settingsUrl %>"
+                        class="manage-btn invite-btn"
+                      >
+                        Invite
+                      </a>
+
+                    <% } else { %>
+
+                      <a
+                        href="<%= guild.settingsUrl %>"
+                        class="manage-btn"
+                      >
+                        Manage →
+                      </a>
+
+                    <% } %>
+
+                  </div>
+
+                </article>
+
+              <% }); %>
+
+            </div>
+
+          <% } else { %>
+
+            <div class="empty-card">
+
+              <div class="empty-icon">
+                <i class="fa fa-server"></i>
+              </div>
+
+              <h2>No server found</h2>
+
+              <p>
+                No server is available to display.
+                Make sure you are logged in with the correct Discord account.
+              </p>
+
+            </div>
+
           <% } %>
+
         </div>
-
-        <% if (guilds && guilds.length > 0) { %>
-
-          <div class="server-grid">
-
-            <% guilds.forEach((guild) => { %>
-
-              <article class="server-card">
-
-                <div class="server-info">
-
-                  <% if (guild.iconURL) { %>
-
-                    <img
-                      class="server-icon"
-                      src="<%= guild.iconURL %>"
-                      alt="<%= guild.name %>"
-                      loading="lazy"
-                    />
-
-                  <% } else { %>
-
-                    <div class="server-icon-fallback">
-                      <%= guild.name
-                        ? guild.name.charAt(0).toUpperCase()
-                        : "?" %>
-                    </div>
-
-                  <% } %>
-
-                  <h2 class="server-name" title="<%= guild.name %>">
-                    <%= guild.name %>
-                  </h2>
-
-                  <% if (guild.id) { %>
-                    <div class="server-id">
-                      ID: <%= guild.id %>
-                    </div>
-                  <% } %>
-
-                </div>
-
-                <div class="server-bottom">
-
-                  <span class="server-members">
-                    <%= guild.memberCount || 0 %> members
-                  </span>
-
-                  <a
-                    class="manage-button"
-                    href="<%= guild.settingsUrl %>"
-                  >
-                    Manage →
-                  </a>
-
-                </div>
-
-              </article>
-
-            <% }); %>
-
-          </div>
-
-        <% } else %>
-
-          <div class="empty-server">
-            <div class="empty-server-icon">🛰️</div>
-
-            <h2>No servers available</h2>
-
-            <p>
-              There are no Discord servers available for you to manage.
-            </p>
-          </div>
-
-        <% } %>
-
-      </div>
-    </main>
+      </main>
+    </div>
   </body>
 </html>
