@@ -1,51 +1,473 @@
 <aside class="modern-sidebar">
 
+  <style>
+    .modern-sidebar {
+      width: 250px;
+      min-height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+
+      padding: 20px 14px;
+
+      background:
+        radial-gradient(
+          circle at top left,
+          rgba(88, 101, 242, 0.14),
+          transparent 32%
+        ),
+        linear-gradient(
+          180deg,
+          #11131a 0%,
+          #0d0f14 100%
+        );
+
+      border-right: 1px solid rgba(255,255,255,.07);
+      box-shadow: 10px 0 35px rgba(0,0,0,.18);
+
+      color: #fff;
+    }
+
+    .modern-sidebar *,
+    .modern-sidebar *::before,
+    .modern-sidebar *::after {
+      box-sizing: border-box;
+    }
+
+    .modern-sidebar .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+
+      padding: 7px 8px 20px;
+      margin-bottom: 10px;
+
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .modern-sidebar .brand-logo {
+      width: 42px;
+      height: 42px;
+
+      display: grid;
+      place-items: center;
+
+      flex-shrink: 0;
+
+      border-radius: 13px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #5865f2,
+          #7280ff
+        );
+
+      color: #fff;
+
+      font-size: 20px;
+      font-weight: 850;
+
+      box-shadow:
+        0 10px 25px rgba(88,101,242,.30);
+    }
+
+    .modern-sidebar .brand-name {
+      color: #fff;
+
+      font-size: 14px;
+      font-weight: 800;
+
+      line-height: 1.2;
+    }
+
+    .modern-sidebar .brand-subtitle {
+      margin-top: 3px;
+
+      color: rgba(255,255,255,.42);
+
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .modern-sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .modern-sidebar .nav-section {
+      margin: 18px 9px 7px;
+
+      color: rgba(255,255,255,.32);
+
+      font-size: 9px;
+      font-weight: 800;
+
+      letter-spacing: .13em;
+    }
+
+    .modern-sidebar .nav-item {
+      position: relative;
+
+      display: flex;
+      align-items: center;
+      gap: 11px;
+
+      min-height: 43px;
+
+      padding: 9px 11px;
+
+      border: 1px solid transparent;
+      border-radius: 11px;
+
+      color: rgba(255,255,255,.62);
+
+      font-size: 12px;
+      font-weight: 650;
+
+      text-decoration: none;
+
+      transition:
+        background .18s ease,
+        color .18s ease,
+        border-color .18s ease,
+        transform .18s ease;
+    }
+
+    .modern-sidebar .nav-item:hover {
+      color: #fff;
+
+      background: rgba(255,255,255,.055);
+
+      border-color: rgba(255,255,255,.06);
+
+      transform: translateX(2px);
+    }
+
+    .modern-sidebar .nav-item.active {
+      color: #fff;
+
+      background:
+        linear-gradient(
+          90deg,
+          rgba(88,101,242,.20),
+          rgba(88,101,242,.08)
+        );
+
+      border-color: rgba(88,101,242,.22);
+
+      box-shadow:
+        inset 3px 0 0 #5865f2;
+    }
+
+    .modern-sidebar .nav-icon {
+      width: 30px;
+      height: 30px;
+
+      display: grid;
+      place-items: center;
+
+      flex-shrink: 0;
+
+      border-radius: 9px;
+
+      background: rgba(255,255,255,.045);
+
+      color: rgba(255,255,255,.62);
+
+      font-size: 14px;
+
+      transition: .18s ease;
+    }
+
+    .modern-sidebar .nav-item:hover .nav-icon,
+    .modern-sidebar .nav-item.active .nav-icon {
+      background: rgba(88,101,242,.20);
+      color: #8b93ff;
+    }
+
+    .modern-sidebar .nav-item span:last-child {
+      overflow: hidden;
+
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .modern-sidebar .sidebar-footer {
+      margin-top: auto;
+
+      padding-top: 15px;
+    }
+
+    .modern-sidebar .bot-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      padding: 12px;
+
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px;
+
+      background: rgba(255,255,255,.025);
+    }
+
+    .modern-sidebar .status-dot {
+      width: 9px;
+      height: 9px;
+
+      flex-shrink: 0;
+
+      border-radius: 50%;
+
+      background: #3ba55c;
+
+      box-shadow:
+        0 0 0 4px rgba(59,165,92,.10),
+        0 0 14px rgba(59,165,92,.45);
+    }
+
+    .modern-sidebar .bot-status strong {
+      display: block;
+
+      color: rgba(255,255,255,.85);
+
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .modern-sidebar .bot-status small {
+      display: block;
+
+      margin-top: 2px;
+
+      color: rgba(255,255,255,.38);
+
+      font-size: 9px;
+    }
+
+    @media (max-width: 900px) {
+
+      .modern-sidebar {
+        width: 215px;
+      }
+
+      .modern-sidebar .brand-name {
+        font-size: 13px;
+      }
+
+    }
+
+    @media (max-width: 700px) {
+
+      .modern-sidebar {
+        width: 68px;
+
+        padding: 15px 9px;
+      }
+
+      .modern-sidebar .brand {
+        justify-content: center;
+
+        padding: 4px 0 15px;
+      }
+
+      .modern-sidebar .brand > div:last-child,
+      .modern-sidebar .nav-section,
+      .modern-sidebar .nav-item span:last-child,
+      .modern-sidebar .bot-status > div {
+        display: none;
+      }
+
+      .modern-sidebar .nav-item {
+        justify-content: center;
+
+        padding: 7px;
+      }
+
+      .modern-sidebar .nav-icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .modern-sidebar .bot-status {
+        justify-content: center;
+
+        padding: 10px 0;
+      }
+    }
+  </style>
+
+
+  <!-- BRAND -->
   <div class="brand">
-    <div class="brand-logo">L</div>
-    <div>
-      <div class="brand-name">LFamiliaHelper</div>
-      <div class="brand-subtitle">Discord Dashboard</div>
+
+    <div class="brand-logo">
+      L
     </div>
+
+    <div>
+      <div class="brand-name">
+        LFamiliaHelper
+      </div>
+
+      <div class="brand-subtitle">
+        Discord Dashboard
+      </div>
+    </div>
+
   </div>
 
+
+  <!-- NAVIGATION -->
   <nav>
 
-    <div class="nav-section">MAIN</div>
 
-    <a href="/" class="nav-item">
-      <span class="nav-icon">⌂</span>
-      <span>Dashboard</span>
+    <!-- MAIN -->
+    <div class="nav-section">
+      MAIN
+    </div>
+
+
+    <a
+      href="/"
+      class="nav-item"
+    >
+
+      <span class="nav-icon">
+        ⌂
+      </span>
+
+      <span>
+        Dashboard
+      </span>
+
     </a>
 
-    <div class="nav-section">MANAGEMENT</div>
 
-    <a href="/manage" class="nav-item">
-      <span class="nav-icon">⚙</span>
-      <span>Server Settings</span>
+    <!-- MANAGEMENT -->
+    <div class="nav-section">
+      MANAGEMENT
+    </div>
+
+
+    <% if (typeof guild !== "undefined" && guild && guild.id) { %>
+
+
+      <!-- SERVER SETTINGS -->
+
+      <a
+        href="/manage/<%= guild.id %>/basic/"
+        class="nav-item"
+      >
+
+        <span class="nav-icon">
+          ⚙
+        </span>
+
+        <span>
+          Server Settings
+        </span>
+
+      </a>
+
+
+      <!-- GREETING -->
+
+      <a
+        href="/manage/<%= guild.id %>/greeting"
+        class="nav-item"
+      >
+
+        <span class="nav-icon">
+          ♧
+        </span>
+
+        <span>
+          Greeting
+        </span>
+
+      </a>
+
+
+    <% } else { %>
+
+
+      <!--
+        No guild context.
+        This happens outside a specific server manager page.
+      -->
+
+      <a
+        href="/"
+        class="nav-item"
+      >
+
+        <span class="nav-icon">
+          ⚙
+        </span>
+
+        <span>
+          Select Server
+        </span>
+
+      </a>
+
+
+    <% } %>
+
+
+    <!-- SYSTEM -->
+    <div class="nav-section">
+      SYSTEM
+    </div>
+
+
+    <a
+      href="/logout"
+      class="nav-item"
+    >
+
+      <span class="nav-icon">
+        ↪
+      </span>
+
+      <span>
+        Logout
+      </span>
+
     </a>
 
-    <a href="/manage/greeting" class="nav-item">
-      <span class="nav-icon">♧</span>
-      <span>Greeting</span>
-    </a>
-
-    <div class="nav-section">SYSTEM</div>
-
-    <a href="/logout" class="nav-item">
-      <span class="nav-icon">↪</span>
-      <span>Logout</span>
-    </a>
 
   </nav>
 
+
+  <!-- FOOTER -->
   <div class="sidebar-footer">
+
     <div class="bot-status">
+
       <span class="status-dot"></span>
+
       <div>
-        <strong>Bot Online</strong>
-        <small>LFamiliaHelper</small>
+
+        <strong>
+          Bot Online
+        </strong>
+
+        <small>
+          LFamiliaHelper
+        </small>
+
       </div>
+
     </div>
+
   </div>
+
 
 </aside>
