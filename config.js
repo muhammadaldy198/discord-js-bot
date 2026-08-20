@@ -6,11 +6,11 @@ module.exports = {
     DEFAULT_PREFIX: "!", // Default prefix for the bot
   },
   INTERACTIONS: {
-    SLASH: false, // Should the interactions be enabled
-    CONTEXT: false, // Should contexts be enabled
-    GLOBAL: false, // Should the interactions be registered globally
-    TEST_GUILD_ID: "xxxxxxxxxxx", // Guild ID where the interactions should be registered. [** Test you commands here first **]
-  },
+  SLASH: true,
+  CONTEXT: false,
+  GLOBAL: false,
+  TEST_GUILD_ID: "1442846959865172000",
+},
   EMBED_COLORS: {
     BOT_EMBED: "#068ADD",
     TRANSPARENT: "#36393F",
