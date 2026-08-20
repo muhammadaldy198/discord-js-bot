@@ -1,18 +1,21 @@
 const {
   EmbedBuilder,
   ApplicationCommandOptionType,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 
 const { getJson } = require("@helpers/HttpUtils");
 const { EMBED_COLORS } = require("@root/config.js");
 
 module.exports = {
-  name: "robloxinventory",
-  description: "View a Roblox user's inventory",
+  name: "roblox-inventory",
+  description: "View a Roblox user's public inventory",
   category: "UTILITY",
 
   botPermissions: ["EmbedLinks"],
-  cooldown: 8,
+  cooldown: 5,
 
   command: {
     enabled: true,
@@ -25,7 +28,7 @@ module.exports = {
     options: [
       {
         name: "username",
-        description: "Roblox username",
+        description: "The Roblox username",
         type: ApplicationCommandOptionType.String,
         required: true,
       },
@@ -34,28 +37,37 @@ module.exports = {
 
   async messageRun(message, args) {
     const username = args.join(" ").trim();
-    const response = await getRobloxInventory(username);
 
-    await message.safeReply(response);
+    if (!username) {
+      return message.safeReply("❌ Please provide a Roblox username.");
+    }
+
+    return message.safeReply(
+      await getInventory(username)
+    );
   },
 
   async interactionRun(interaction) {
-    const username = interaction.options.getString("username", true);
-    const response = await getRobloxInventory(username);
+    const username = interaction.options
+      .getString("username", true)
+      .trim();
 
-    await interaction.followUp(response);
+    return interaction.followUp(
+      await getInventory(username)
+    );
   },
 };
 
-async function getRobloxInventory(username) {
+async function getInventory(username) {
   try {
     // Find Roblox user
     const search = await getJson(
-      `https://users.roblox.com/v1/usernames/users`,
+      "https://users.roblox.com/v1/usernames/users",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify({
           usernames: [username],
@@ -64,60 +76,149 @@ async function getRobloxInventory(username) {
       }
     );
 
-    if (!search.success || !search.data || !search.data.length) {
-      return "❌ Roblox user not found.";
+    if (
+      !search.success ||
+      !search.data ||
+      !Array.isArray(search.data.data) ||
+      search.data.data.length === 0
+    ) {
+      return `❌ Roblox user **${username}** tidak ditemukan.`;
     }
 
-    const user = search.data[0];
+    const user = search.data.data[0];
     const userId = user.id;
 
-    // Roblox inventory endpoint
-    const inventory = await getJson(
-      `https://inventory.roblox.com/v1/users/${userId}/items/Asset?sortOrder=Desc&limit=100`
+    // Get profile
+    const profileResult = await getJson(
+      `https://users.roblox.com/v1/users/${userId}`
     );
 
-    if (!inventory.success) {
-      return "❌ Unable to access this Roblox inventory. The inventory may be private.";
+    if (!profileResult.success || !profileResult.data) {
+      return "❌ Gagal mengambil profile Roblox.";
     }
 
-    const items = inventory.data || [];
+    const profile = profileResult.data;
 
-    if (!items.length) {
-      return `📦 **${user.name}** has no publicly visible inventory items.`;
+    // Avatar
+    let avatarUrl = null;
+
+    const thumbnailResult = await getJson(
+      `https://thumbnails.roblox.com/v1/users/avatar-headshot` +
+        `?userIds=${userId}` +
+        `&size=720x720` +
+        `&format=Png` +
+        `&isCircular=false`
+    );
+
+    if (
+      thumbnailResult.success &&
+      thumbnailResult.data &&
+      Array.isArray(thumbnailResult.data.data) &&
+      thumbnailResult.data.data.length > 0
+    ) {
+      const thumbnail = thumbnailResult.data.data[0];
+
+      if (thumbnail.state === "Completed") {
+        avatarUrl = thumbnail.imageUrl;
+      }
     }
 
-    const displayed = items.slice(0, 15);
+    // Check inventory
+    const inventoryResult = await getJson(
+      `https://inventory.roblox.com/v1/users/${userId}/can-view-inventory`
+    );
 
-    const itemList = displayed
-      .map((item, index) => {
-        const name = item.name || "Unknown Item";
-        const assetId = item.id || "Unknown";
-
-        return `**${index + 1}.** ${name}\n> ID: \`${assetId}\``;
-      })
-      .join("\n\n");
+    const canViewInventory =
+      inventoryResult.success &&
+      inventoryResult.data &&
+      inventoryResult.data.canViewInventory === true;
 
     const embed = new EmbedBuilder()
       .setColor(EMBED_COLORS.BOT_EMBED)
-      .setTitle(`Roblox Inventory — ${user.name}`)
-      .setURL(`https://www.roblox.com/users/${userId}/profile`)
-      .setDescription(itemList)
-      .addFields({
-        name: "📦 Items Shown",
-        value: `${displayed.length} / ${items.length}`,
+      .setTitle("◈ Roblox Inventory")
+      .setDescription(
+        `Public inventory information for **${profile.name}**`
+      )
+      .setURL(
+        `https://www.roblox.com/users/${userId}/profile`
+      );
+
+    if (avatarUrl) {
+      embed.setImage(avatarUrl);
+    }
+
+    embed.addFields(
+      {
+        name: "👤 Username",
+        value: `\`${profile.name}\``,
         inline: true,
-      })
-      .setFooter({
-        text: `Roblox User ID: ${userId}`,
-      });
-
-    return { embeds: [embed] };
-  } catch (error) {
-    console.error("Roblox inventory error:", error);
-
-    return (
-      "❌ Failed to fetch Roblox inventory.\n" +
-      "The inventory may be private or Roblox may be rate-limiting the request."
+      },
+      {
+        name: "✨ Display Name",
+        value: `\`${profile.displayName || profile.name}\``,
+        inline: true,
+      },
+      {
+        name: "🆔 User ID",
+        value: `\`${userId}\``,
+        inline: true,
+      },
+      {
+        name: "🎒 Inventory",
+        value: canViewInventory
+          ? "🟢 Public"
+          : "🔒 Private",
+        inline: false,
+      }
     );
+
+    if (!canViewInventory) {
+      embed.addFields({
+        name: "⚠️ Inventory Unavailable",
+        value:
+          "Inventory user ini bersifat **private**, jadi Roblox tidak mengizinkan bot mengambil itemnya.",
+        inline: false,
+      });
+    } else {
+      embed.addFields({
+        name: "📦 Items",
+        value:
+          "Inventory dapat dilihat secara publik. Gunakan tombol **View Inventory** untuk melihat item Roblox.",
+        inline: false,
+      });
+    }
+
+    embed.setFooter({
+      text: `Roblox • User ID: ${userId}`,
+    });
+
+    embed.setTimestamp();
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel("View Inventory")
+        .setStyle(ButtonStyle.Link)
+        .setURL(
+          `https://www.roblox.com/users/${userId}/inventory`
+        ),
+      new ButtonBuilder()
+        .setLabel("View Profile")
+        .setStyle(ButtonStyle.Link)
+        .setURL(
+          `https://www.roblox.com/users/${userId}/profile`
+        )
+    );
+
+    return {
+      embeds: [embed],
+      components: [row],
+    };
+  } catch (error) {
+    console.error(
+      "[ROBLOX INVENTORY] Error:",
+      error
+    );
+
+    return "❌ Gagal mengambil inventory Roblox.";
   }
-  }
+}
