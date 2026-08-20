@@ -1,184 +1,1046 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <%- include('../includes/head') %>
 
-	<%- include('../includes/head') %>
-	
-	<body class="hold-transition skin-blue sidebar-mini">
+    <style>
+        :root {
+            --gm-bg: #0b0d12;
+            --gm-card: #11141b;
+            --gm-card-2: #151922;
+            --gm-border: rgba(255,255,255,.08);
+            --gm-border-hover: rgba(255,255,255,.14);
+            --gm-text: #f5f7fb;
+            --gm-muted: #8e96a8;
+            --gm-blue: #5865f2;
+            --gm-blue-hover: #6975ff;
+            --gm-green: #35c98b;
+            --gm-red: #ed5969;
+            --gm-shadow: 0 20px 60px rgba(0,0,0,.28);
+        }
 
-		<div class="wrapper">
+        .greeting-page {
+            min-height: calc(100vh - 50px);
+            padding: 28px;
+            background:
+                radial-gradient(
+                    circle at 85% 0%,
+                    rgba(88,101,242,.12),
+                    transparent 32%
+                ),
+                radial-gradient(
+                    circle at 10% 100%,
+                    rgba(88,101,242,.06),
+                    transparent 28%
+                ),
+                var(--gm-bg);
+            color: var(--gm-text);
+        }
 
-			<!-- The header is the topbar -->
-			<%- include('../includes/header') %>
+        .greeting-container {
+            width: 100%;
+            max-width: 1450px;
+            margin: 0 auto;
+        }
 
-			<!-- The sidebar includes the menu -->
-			<%- include('../includes/sidebar') %>
+        .greeting-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
 
-			<!-- Content Wrapper. Contains page content -->
-			<div class="content-wrapper">
+        .greeting-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-				<!-- Content Header (Page header) -->
-				<section class="content-header">
-					<h3> Greeting </h3>
-					<ol class="breadcrumb">
-                        <li><a href="/"><i class="fa fa-home"></i>Selector</a></li>
-                        <li><a href="<%=`/manage/${guild.id}/`%>"><%=guild.name%></a></li>
-                        <li class="active">Greeting</li>
-					</ol>
-				</section>
+        .greeting-title-icon {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 15px;
+            background: rgba(88,101,242,.14);
+            border: 1px solid rgba(88,101,242,.24);
+            color: var(--gm-blue-hover);
+            font-size: 21px;
+        }
 
-                <!-- Content -->
-				<section class="content">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <!-- WELCOME CONFIGURATION -->
-                            <div class="box box-success">
-                                <div class="box-header with-border">
-                                    <h3 class="box-title">Welcome Embed</h3>
-                                </div>
-                                <form role="form" action="/manage/<%= guild.id %>/greeting" method="POST">
-                                    <div class="box-body">
-                                        <div class="form-group">
-                                            <label>Content</label>
-                                            <% if(guild.welcome.embed.description || guild.welcome.content) {%>
-                                                <textarea rows="3" name="content" class="form-control"><%- guild.welcome.content?.replaceAll(/\\n/g, '&#10;') %></textarea>
-                                            <% } else { %>
-                                                <textarea rows="3" name="content" class="form-control" placeholder="<%= 'Welcome to the server {member:name} 🎉' %>"></textarea>
-                                            <% } %>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Description</label>
-                                            <textarea rows="3" name="description" class="form-control"><%- guild.welcome.embed.description?.replaceAll(/\\n/g, '&#10;') %></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Footer</label>
-                                            <input type="text" name="footer" class="form-control" value="<%= guild.welcome.embed.footer %>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Hex Color</label>
-                                            <input type="text" name="hexcolor" class="form-control" value="<%= guild.welcome.embed.color %>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Image URL</label>
-                                            <input type="text" name="image" class="form-control" value="<%= guild.welcome.embed.image %>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Channel</label>
-                                            <select class="form-control" name="channel">
-                                                <% if(bot.channels.cache.has(guild.welcome.channel)){ %>
-                                                    <option selected="selected">#<%= bot.channels.cache.get(guild.welcome.channel).name %></option>
-                                                    <% guild.channels.cache.filter((ch) => ch.id !== guild.welcome.channel && ch.type === 0).forEach((ch) => { %>
-                                                        <option>#<%= ch.name %></option>
-                                                    <% }); } else { %>
-                                                    <option disabled selected value> -- select an option -- </option>
-                                                    <% guild.channels.cache.filter((ch) => ch.id !== guild.channels.cache.first().id && ch.type === 0).forEach((ch) => { %>
-                                                        <option>#<%= ch.name %></option>
-                                                    <% }); %>
-                                                <% } %>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <% if(guild.welcome.embed.thumbnail) { %>
-                                                        <input type="checkbox" name="thumbnail" checked>Thumbnail
-                                                    <% } else { %>
-                                                        <input type="checkbox" name="thumbnail">Thumbnail
-                                                    <% } %>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="box-footer">
-                                        <% if(guild.welcome.enabled){ %>
-                                            <button type="submit" name="welcomeDisable" class="btn btn-danger">Disable Messages</button>
-                                            <button type="submit" name="welcomeUpdate" class="btn btn-primary pull-right">Update</button>
-                                        <% } else { %>
-                                            <button type="submit" name="welcomeEnable" class="btn btn-success">Enable Message</button>
-                                        <% } %>
-                                    </div>
-                                </form>
+        .greeting-title h1 {
+            margin: 0;
+            color: var(--gm-text);
+            font-size: 27px;
+            font-weight: 800;
+            letter-spacing: -.025em;
+        }
+
+        .greeting-title p {
+            margin: 5px 0 0;
+            color: var(--gm-muted);
+            font-size: 13px;
+        }
+
+        .guild-badge {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 13px;
+            border: 1px solid var(--gm-border);
+            border-radius: 12px;
+            background: rgba(255,255,255,.025);
+            color: var(--gm-muted);
+            font-size: 12px;
+        }
+
+        .guild-badge i {
+            color: var(--gm-blue-hover);
+        }
+
+        .greeting-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .greeting-card {
+            overflow: hidden;
+            border: 1px solid var(--gm-border);
+            border-radius: 20px;
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255,255,255,.035),
+                    rgba(255,255,255,.012)
+                ),
+                var(--gm-card);
+            box-shadow: var(--gm-shadow);
+            transition:
+                border-color .2s ease,
+                transform .2s ease,
+                box-shadow .2s ease;
+        }
+
+        .greeting-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--gm-border-hover);
+            box-shadow: 0 25px 70px rgba(0,0,0,.34);
+        }
+
+        .greeting-card-header {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 20px 21px;
+            border-bottom: 1px solid var(--gm-border);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 40px;
+            border-radius: 12px;
+            font-size: 17px;
+        }
+
+        .card-icon.welcome {
+            background: rgba(53,201,139,.12);
+            color: var(--gm-green);
+            border: 1px solid rgba(53,201,139,.18);
+        }
+
+        .card-icon.farewell {
+            background: rgba(237,89,105,.12);
+            color: var(--gm-red);
+            border: 1px solid rgba(237,89,105,.18);
+        }
+
+        .card-heading h2 {
+            margin: 0;
+            color: var(--gm-text);
+            font-size: 16px;
+            font-weight: 750;
+        }
+
+        .card-heading span {
+            display: block;
+            margin-top: 3px;
+            color: var(--gm-muted);
+            font-size: 11px;
+        }
+
+        .greeting-form {
+            margin: 0;
+        }
+
+        .greeting-body {
+            padding: 21px;
+        }
+
+        .field {
+            margin-bottom: 17px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #dfe3eb;
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .field textarea,
+        .field input,
+        .field select {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid var(--gm-border) !important;
+            border-radius: 11px !important;
+            background: var(--gm-card-2) !important;
+            color: var(--gm-text) !important;
+            box-shadow: none !important;
+            outline: none;
+            transition:
+                border-color .18s ease,
+                box-shadow .18s ease;
+        }
+
+        .field textarea {
+            min-height: 92px;
+            resize: vertical;
+            padding: 12px 13px;
+            line-height: 1.55;
+        }
+
+        .field input,
+        .field select {
+            height: 43px;
+            padding: 0 13px;
+        }
+
+        .field textarea:focus,
+        .field input:focus,
+        .field select:focus {
+            border-color: rgba(88,101,242,.65) !important;
+            box-shadow: 0 0 0 3px rgba(88,101,242,.10) !important;
+        }
+
+        .field input::placeholder,
+        .field textarea::placeholder {
+            color: #626b7d;
+        }
+        .field select option {
+            background: #151922;
+            color: #f5f7fb;
+        }
+
+        .field-hint {
+            margin-top: 6px;
+            color: #697286;
+            font-size: 10px;
+        }
+
+        .toggle-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 13px 14px;
+            border: 1px solid var(--gm-border);
+            border-radius: 12px;
+            background: rgba(255,255,255,.018);
+        }
+
+        .toggle-info strong {
+            display: block;
+            color: #e9ecf3;
+            font-size: 12px;
+        }
+
+        .toggle-info span {
+            display: block;
+            margin-top: 3px;
+            color: var(--gm-muted);
+            font-size: 10px;
+        }
+
+        .custom-check {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .custom-check input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .check-ui {
+            position: relative;
+            width: 43px;
+            height: 24px;
+            display: block;
+            border-radius: 999px;
+            background: #292e3a;
+            border: 1px solid rgba(255,255,255,.08);
+            transition: .2s ease;
+        }
+
+        .check-ui::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #8b93a3;
+            transition: .2s ease;
+        }
+
+        .custom-check input:checked + .check-ui {
+            background: var(--gm-blue);
+            border-color: var(--gm-blue);
+        }
+
+        .custom-check input:checked + .check-ui::after {
+            left: 22px;
+            background: white;
+        }
+
+        .greeting-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 17px 21px;
+            border-top: 1px solid var(--gm-border);
+            background: rgba(0,0,0,.08);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--gm-muted);
+            font-size: 11px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #697286;
+        }
+
+        .status.enabled .status-dot {
+            background: var(--gm-green);
+            box-shadow: 0 0 9px rgba(53,201,139,.55);
+        }
+
+        .status.disabled .status-dot {
+            background: var(--gm-red);
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .g-btn {
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 0 14px;
+            border: 0;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none !important;
+            transition:
+                transform .18s ease,
+                background .18s ease,
+                box-shadow .18s ease;
+        }
+
+        .g-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .g-btn-primary {
+            background: var(--gm-blue);
+            color: #fff !important;
+            box-shadow: 0 8px 22px rgba(88,101,242,.20);
+        }
+
+        .g-btn-primary:hover {
+            background: var(--gm-blue-hover);
+            color: #fff !important;
+        }
+
+        .g-btn-success {
+            background: var(--gm-green);
+            color: #071b13 !important;
+        }
+
+        .g-btn-success:hover {
+            background: #43d99a;
+            color: #071b13 !important;
+        }
+
+        .g-btn-danger {
+            background: rgba(237,89,105,.12);
+            color: #ff7886 !important;
+            border: 1px solid rgba(237,89,105,.20);
+        }
+
+        .g-btn-danger:hover {
+            background: rgba(237,89,105,.19);
+            color: #ff8b97 !important;
+        }
+
+        .color-preview {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .color-preview input {
+            flex: 1;
+        }
+
+        .color-dot {
+            width: 27px;
+            height: 27px;
+            flex: 0 0 27px;
+            border-radius: 8px;
+            background: var(--gm-blue);
+            border: 1px solid rgba(255,255,255,.12);
+        }
+
+        @media (max-width: 1050px) {
+            .greeting-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .greeting-page {
+                padding: 18px 13px 30px;
+            }
+
+            .greeting-header {
+                align-items: flex-start;
+                margin-bottom: 20px;
+            }
+
+            .greeting-title-icon {
+                width: 42px;
+                height: 42px;
+                flex-basis: 42px;
+            }
+
+            .greeting-title h1 {
+                font-size: 23px;
+            }
+
+            .guild-badge {
+                display: none;
+            }
+
+            .greeting-card-header {
+                padding: 16px;
+            }
+
+            .greeting-body {
+                padding: 16px;
+            }
+
+            .greeting-footer {
+                align-items: stretch;
+                flex-direction: column;
+                padding: 15px 16px;
+            }
+
+            .actions {
+                width: 100%;
+            }
+
+            .actions .g-btn {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .greeting-title p {
+                font-size: 11px;
+            }
+
+            .card-icon {
+                width: 36px;
+                height: 36px;
+                flex-basis: 36px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .actions .g-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+<div class="wrapper">
+
+    <%- include('../includes/header') %>
+    <%- include('../includes/sidebar') %>
+
+    <div class="content-wrapper">
+
+        <main class="greeting-page">
+            <div class="greeting-container">
+
+                <div class="greeting-header">
+                    <div class="greeting-title">
+                        <div class="greeting-title-icon">
+                            <i class="fa fa-comments"></i>
+                        </div>
+
+                        <div>
+                            <h1>Greeting</h1>
+                            <p>
+                                Configure welcome and farewell messages for your server.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="guild-badge">
+                        <i class="fa fa-server"></i>
+                        <span><%= guild.name %></span>
+                    </div>
+                </div>
+
+                <div class="greeting-grid">
+                    <!-- WELCOME -->
+                    <article class="greeting-card">
+
+                        <div class="greeting-card-header">
+                            <div class="card-icon welcome">
+                                <i class="fa fa-user-plus"></i>
+                            </div>
+
+                            <div class="card-heading">
+                                <h2>Welcome Message</h2>
+                                <span>Send a message when someone joins</span>
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <!-- FAREWELL CONFIGURATION -->
-                            <div class="box box-danger">
-                                <div class="box-header with-border">
-                                    <h3 class="box-title">Farewell Configuration</h3>
+                        <form
+                            class="greeting-form"
+                            role="form"
+                            action="/manage/<%= guild.id %>/greeting"
+                            method="POST"
+                        >
+
+                            <div class="greeting-body">
+
+                                <div class="field">
+                                    <label>Content</label>
+
+                                    <% if(guild.welcome.embed.description || guild.welcome.content) { %>
+
+                                        <textarea
+                                            name="content"
+                                            placeholder="Welcome to the server {member:name} 🎉"
+                                        ><%- guild.welcome.content?.replaceAll(/\\n/g, '&#10;') %></textarea>
+
+                                    <% } else { %>
+
+                                        <textarea
+                                            name="content"
+                                            placeholder="Welcome to the server {member:name} 🎉"
+                                        ></textarea>
+
+                                    <% } %>
+
+                                    <div class="field-hint">
+                                        Message text sent to the selected channel.
+                                    </div>
                                 </div>
-                                <form role="form" action="/manage/<%= guild.id %>/greeting" method="POST">
-                                    <div class="box-body">
-                                        <div class="form-group">
-                                            <label>Content</label>
-                                            <% if(guild.farewell.embed.description || guild.farewell.content) {%>
-                                                <textarea rows="3" name="content" class="form-control"><%- guild.farewell.content?.replaceAll(/\\n/g, '&#10;') %></textarea>
-                                            <% } else { %>
-                                                <textarea rows="3" name="content" class="form-control" placeholder="<%= '{member:tag} has left the server 👋' %>"></textarea>
-                                            <% } %>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Description</label>
-                                            <textarea rows="3" name="description" class="form-control"><%- guild.farewell.embed.description?.replaceAll(/\\n/g, '&#10;') %></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Footer</label>
-                                            <input type="text" name="footer" class="form-control" value="<%= guild.farewell.embed.footer %>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Hex Color</label>
-                                            <input type="text" name="hexcolor" class="form-control" value="<%= guild.farewell.embed.color %>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Image URL</label>
-                                            <input type="text" name="image" class="form-control" value="<%= guild.farewell.embed.image %>">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Channel</label>
-                                            <select class="form-control" name="channel">
-                                                <% if(bot.channels.cache.has(guild.farewell.channel)){ %>
-                                                    <option selected="selected">#<%= bot.channels.cache.get(guild.farewell.channel).name %></option>
-                                                    <% guild.channels.cache.filter((ch) => ch.id !== guild.farewell.channel && ch.type === 0).forEach((ch) => { %>
-                                                        <option>#<%= ch.name %></option>
-                                                    <% }); } else { %>
-                                                        <option disabled selected value> -- select an option -- </option>
-                                                    <% guild.channels.cache.filter((ch) => ch.id !== guild.channels.cache.first().id && ch.type === 0).forEach((ch) => { %>
-                                                        <option>#<%= ch.name %></option>
-                                                    <% }); %>
-                                                <% } %>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <% if(guild.farewell.embed.thumbnail) { %>
-                                                        <input type="checkbox" name="thumbnail" checked>Thumbnail
-                                                    <% } else { %>
-                                                        <input type="checkbox" name="thumbnail">Thumbnail
-                                                    <% } %>
-                                                </label>
-                                            </div>
-                                        </div>
+
+                                <div class="field">
+                                    <label>Description</label>
+
+                                    <textarea
+                                        name="description"
+                                        placeholder="Add an optional embed description..."
+                                    ><%- guild.welcome.embed.description?.replaceAll(/\\n/g, '&#10;') %></textarea>
+                                </div>
+
+                                <div class="field">
+                                    <label>Footer</label>
+
+                                    <input
+                                        type="text"
+                                        name="footer"
+                                        value="<%= guild.welcome.embed.footer %>"
+                                        placeholder="Optional footer"
+                                    >
+                                </div>
+
+                                <div class="field">
+                                    <label>Embed Color</label>
+
+                                    <div class="color-preview">
+                                        <input
+                                            type="text"
+                                            name="hexcolor"
+                                            value="<%= guild.welcome.embed.color %>"
+                                            placeholder="#5865F2"
+                                        >
+
+                                        <span
+                                            class="color-dot"
+                                            style="background:<%= guild.welcome.embed.color || '#5865F2' %>;"
+                                        ></span>
                                     </div>
-                                    <div class="box-footer">
-                                        <% if(guild.farewell.enabled){ %>
-                                            <button type="submit" name="farewellDisable" class="btn btn-danger">Disable Messages</button>
-                                            <button type="submit" name="farewellUpdate" class="btn btn-primary pull-right">Update</button>
+                                </div>
+
+                                <div class="field">
+                                    <label>Image URL</label>
+
+                                    <input
+                                        type="text"
+                                        name="image"
+                                        value="<%= guild.welcome.embed.image %>"
+                                        placeholder="https://example.com/image.png"
+                                    >
+                                </div>
+
+                                <div class="field">
+                                    <label>Channel</label>
+
+                                    <select name="channel">
+
+                                        <% if(bot.channels.cache.has(guild.welcome.channel)) { %>
+
+                                            <option selected="selected">
+                                                #<%= bot.channels.cache.get(guild.welcome.channel).name %>
+                                            </option>
+
+                                            <% guild.channels.cache
+                                                .filter((ch) =>
+                                                    ch.id !== guild.welcome.channel &&
+                                                    ch.type === 0
+                                                )
+                                                .forEach((ch) => { %>
+
+                                                <option>#<%= ch.name %></option>
+
+                                            <% }); %>
+
                                         <% } else { %>
-                                            <button type="submit" name="farewellEnable" class="btn btn-success">Enable Message</button>
+
+                                            <option disabled selected value>
+                                                -- select an option --
+                                            </option>
+
+                                            <% guild.channels.cache
+                                                .filter((ch) =>
+                                                    ch.id !== guild.channels.cache.first().id &&
+                                                    ch.type === 0
+                                                )
+                                                .forEach((ch) => { %>
+
+                                                <option>#<%= ch.name %></option>
+
+                                            <% }); %>
+
                                         <% } %>
+
+                                    </select>
+                                </div>
+
+                                <div class="toggle-field">
+
+                                    <div class="toggle-info">
+                                        <strong>Show Thumbnail</strong>
+                                        <span>Add the member avatar as embed thumbnail</span>
                                     </div>
-                                </form>
+
+                                    <label class="custom-check">
+
+                                        <% if(guild.welcome.embed.thumbnail) { %>
+
+                                            <input
+                                                type="checkbox"
+                                                name="thumbnail"
+                                                checked
+                                            >
+
+                                        <% } else { %>
+
+                                            <input
+                                                type="checkbox"
+                                                name="thumbnail"
+                                            >
+
+                                        <% } %>
+
+                                        <span class="check-ui"></span>
+
+                                    </label>
+
+                                </div>
+
                             </div>
 
-                        </div>
-                    <div>
-				</section>
-				
-			</div>
-            <!-- /.content-wrapper -->
+                            <div class="greeting-footer">
 
-            <%- include('../includes/footer') %>
-		</div>
-		<!-- ./wrapper -->
-	</body>
+                                <% if(guild.welcome.enabled) { %>
+
+                                    <div class="status enabled">
+                                        <span class="status-dot"></span>
+                                        Welcome messages enabled
+                                    </div>
+
+                                    <div class="actions">
+
+                                        <button
+                                            type="submit"
+                                            name="welcomeDisable"
+                                            class="g-btn g-btn-danger"
+                                        >
+                                            <i class="fa fa-power-off"></i>
+                                            Disable
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            name="welcomeUpdate"
+                                            class="g-btn g-btn-primary"
+                                        >
+                                            <i class="fa fa-save"></i>
+                                            Update
+                                        </button>
+
+                                    </div>
+
+                                <% } else { %>
+
+                                    <div class="status disabled">
+                                        <span class="status-dot"></span>
+                                        Welcome messages disabled
+                                    </div>
+
+                                    <div class="actions">
+
+                                        <button
+                                            type="submit"
+                                            name="welcomeEnable"
+                                            class="g-btn g-btn-success"
+                                        >
+                                            <i class="fa fa-power-off"></i>
+                                            Enable Message
+                                        </button>
+
+                                    </div>
+
+                                <% } %>
+
+                            </div>
+
+                        </form>
+
+                    </article>
+
+
+                    <!-- FAREWELL -->
+                    <article class="greeting-card">
+
+                        <div class="greeting-card-header">
+                            <div class="card-icon farewell">
+                                <i class="fa fa-user-times"></i>
+                            </div>
+
+                            <div class="card-heading">
+                                <h2>Farewell Message</h2>
+                                <span>Send a message when someone leaves</span>
+                            </div>
+                        </div>
+
+                        <form
+                            class="greeting-form"
+                            role="form"
+                            action="/manage/<%= guild.id %>/greeting"
+                            method="POST"
+                        >
+
+                            <div class="greeting-body">
+                                <div class="field">
+                                    <label>Content</label>
+
+                                    <% if(guild.farewell.embed.description || guild.farewell.content) { %>
+
+                                        <textarea
+                                            name="content"
+                                            placeholder="{member:tag} has left the server 👋"
+                                        ><%- guild.farewell.content?.replaceAll(/\\n/g, '&#10;') %></textarea>
+
+                                    <% } else { %>
+
+                                        <textarea
+                                            name="content"
+                                            placeholder="{member:tag} has left the server 👋"
+                                        ></textarea>
+
+                                    <% } %>
+
+                                    <div class="field-hint">
+                                        Message text sent to the selected channel.
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>Description</label>
+
+                                    <textarea
+                                        name="description"
+                                        placeholder="Add an optional embed description..."
+                                    ><%- guild.farewell.embed.description?.replaceAll(/\\n/g, '&#10;') %></textarea>
+                                </div>
+
+                                <div class="field">
+                                    <label>Footer</label>
+
+                                    <input
+                                        type="text"
+                                        name="footer"
+                                        value="<%= guild.farewell.embed.footer %>"
+                                        placeholder="Optional footer"
+                                    >
+                                </div>
+
+                                <div class="field">
+                                    <label>Embed Color</label>
+
+                                    <div class="color-preview">
+                                        <input
+                                            type="text"
+                                            name="hexcolor"
+                                            value="<%= guild.farewell.embed.color %>"
+                                            placeholder="#ED5969"
+                                        >
+
+                                        <span
+                                            class="color-dot"
+                                            style="background:<%= guild.farewell.embed.color || '#ED5969' %>;"
+                                        ></span>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>Image URL</label>
+
+                                    <input
+                                        type="text"
+                                        name="image"
+                                        value="<%= guild.farewell.embed.image %>"
+                                        placeholder="https://example.com/image.png"
+                                    >
+                                </div>
+
+                                <div class="field">
+                                    <label>Channel</label>
+
+                                    <select name="channel">
+
+                                        <% if(bot.channels.cache.has(guild.farewell.channel)) { %>
+
+                                            <option selected="selected">
+                                                #<%= bot.channels.cache.get(guild.farewell.channel).name %>
+                                            </option>
+
+                                            <% guild.channels.cache
+                                                .filter((ch) =>
+                                                    ch.id !== guild.farewell.channel &&
+                                                    ch.type === 0
+                                                )
+                                                .forEach((ch) => { %>
+
+                                                <option>#<%= ch.name %></option>
+
+                                            <% }); %>
+
+                                        <% } else { %>
+
+                                            <option disabled selected value>
+                                                -- select an option --
+                                            </option>
+
+                                            <% guild.channels.cache
+                                                .filter((ch) =>
+                                                    ch.id !== guild.channels.cache.first().id &&
+                                                    ch.type === 0
+                                                )
+                                                .forEach((ch) => { %>
+
+                                                <option>#<%= ch.name %></option>
+
+                                            <% }); %>
+
+                                        <% } %>
+
+                                    </select>
+                                </div>
+
+                                <div class="toggle-field">
+
+                                    <div class="toggle-info">
+                                        <strong>Show Thumbnail</strong>
+                                        <span>Add the member avatar as embed thumbnail</span>
+                                    </div>
+
+                                    <label class="custom-check">
+
+                                        <% if(guild.farewell.embed.thumbnail) { %>
+
+                                            <input
+                                                type="checkbox"
+                                                name="thumbnail"
+                                                checked
+                                            >
+
+                                        <% } else { %>
+
+                                            <input
+                                                type="checkbox"
+                                                name="thumbnail"
+                                            >
+
+                                        <% } %>
+
+                                        <span class="check-ui"></span>
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <div class="greeting-footer">
+
+                                <% if(guild.farewell.enabled) { %>
+
+                                    <div class="status enabled">
+                                        <span class="status-dot"></span>
+                                        Farewell messages enabled
+                                    </div>
+
+                                    <div class="actions">
+
+                                        <button
+                                            type="submit"
+                                            name="farewellDisable"
+                                            class="g-btn g-btn-danger"
+                                        >
+                                            <i class="fa fa-power-off"></i>
+                                            Disable
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            name="farewellUpdate"
+                                            class="g-btn g-btn-primary"
+                                        >
+                                            <i class="fa fa-save"></i>
+                                            Update
+                                        </button>
+
+                                    </div>
+
+                                <% } else { %>
+
+                                    <div class="status disabled">
+                                        <span class="status-dot"></span>
+                                        Farewell messages disabled
+                                    </div>
+
+                                    <div class="actions">
+
+                                        <button
+                                            type="submit"
+                                            name="farewellEnable"
+                                            class="g-btn g-btn-success"
+                                        >
+                                            <i class="fa fa-power-off"></i>
+                                            Enable Message
+                                        </button>
+
+                                    </div>
+
+                                <% } %>
+
+                            </div>
+
+                        </form>
+
+                    </article>
+
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <%- include('../includes/footer') %>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        document.querySelectorAll('input[name="hexcolor"]').forEach(function (input) {
+
+            const wrapper = input.closest('.color-preview');
+            if (!wrapper) return;
+
+            const preview = wrapper.querySelector('.color-dot');
+            if (!preview) return;
+
+            function updateColor() {
+                const value = input.value.trim();
+
+                if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+                    preview.style.background = value;
+                }
+            }
+
+            input.addEventListener('input', updateColor);
+            updateColor();
+        });
+
+    });
+</script>
+
+</body>
 </html>
