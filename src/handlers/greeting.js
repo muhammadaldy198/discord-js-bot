@@ -60,7 +60,7 @@ const parse = async (content, member, inviterData = {}) => {
     .replaceAll(/{member:name}/g, member.user.username)
     .replaceAll(/{member:dis}/g, member.user.discriminator)
     .replaceAll(/{member:tag}/g, member.user.tag)
-    .replaceAll(/{member:mention}/g, member.toString())
+    .replaceAll(/{member:mention}/g, `<@${member.id}>`)
     .replaceAll(
       /{member:avatar}/g,
       member.user.displayAvatarURL({
