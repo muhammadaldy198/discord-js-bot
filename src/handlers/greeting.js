@@ -212,9 +212,11 @@ const buildGreeting = async (
   // ==============================
 
   return {
-    flags: MessageFlags.IsComponentsV2,
-    components: [container],
-  };
+  flags: MessageFlags.IsComponentsV2,
+  components: [container],
+  allowedMentions: {
+    users: [member.id],
+  },
 };
 
 /**
