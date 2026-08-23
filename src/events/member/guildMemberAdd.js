@@ -30,6 +30,5 @@ module.exports = async (client, member) => {
   const inviterData = settings.invite.tracking ? await inviteHandler.trackJoinedMember(member) : {};
 
   // Send welcome message
-  const freshMember = await guild.members.fetch(member.id);
-greetingHandler.sendWelcome(freshMember, inviterData);
-  };
+  greetingHandler.sendWelcome(member, inviterData);
+};
