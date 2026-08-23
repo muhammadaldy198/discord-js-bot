@@ -16,7 +16,6 @@ const { getSettings } = require("@schemas/Guild");
  */
 const parse = async (content, member, inviterData = {}) => {
   const inviteData = {};
-
   const getEffectiveInvites = (data = {}) =>
     (data.tracked || 0) +
     (data.added || 0) -
@@ -31,7 +30,6 @@ const parse = async (content, member, inviterData = {}) => {
     if (inviterId !== "VANITY" && inviterId !== "NA") {
       try {
         const inviter = await member.client.users.fetch(inviterId);
-
         inviteData.name = inviter.username;
         inviteData.tag = inviter.tag;
       } catch (ex) {
@@ -60,7 +58,7 @@ const parse = async (content, member, inviterData = {}) => {
     .replaceAll(/{member:name}/g, member.user.username)
     .replaceAll(/{member:dis}/g, member.user.discriminator)
     .replaceAll(/{member:tag}/g, member.user.tag)
-    .replaceAll(/{member:mention}/g, `<@${member.id}>`)
+    .replaceAll(/{member:mention}/g, member.toString())
     .replaceAll(
       /{member:avatar}/g,
       member.user.displayAvatarURL({
@@ -94,7 +92,6 @@ const buildGreeting = async (
   // ==============================
 
   let description;
-
   if (embed.description) {
     description = await parse(
       embed.description,
@@ -212,11 +209,9 @@ const buildGreeting = async (
   // ==============================
 
   return {
-  flags: MessageFlags.IsComponentsV2,
-  components: [container],
-  allowedMentions: {
-    users: [member.id],
-  },
+    flags: MessageFlags.IsComponentsV2,
+    components: [container],
+  };
 };
 
 /**
