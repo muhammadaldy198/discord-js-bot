@@ -23,12 +23,18 @@ module.exports = async (client, member) => {
       settings.data.bots += 1;
       await settings.save();
     }
-    if (!client.counterUpdateQueue.includes(guild.id)) client.counterUpdateQueue.push(guild.id);
+
+    if (!client.counterUpdateQueue.includes(guild.id)) {
+      client.counterUpdateQueue.push(guild.id);
+    }
   }
 
   // Check if invite tracking is enabled
-  const inviterData = settings.invite.tracking ? await inviteHandler.trackJoinedMember(member) : {};
+  const inviterData = settings.invite.tracking
+    ? await inviteHandler.trackJoinedMember(member)
+    : {};
 
   // Send welcome message
   const freshMember = await guild.members.fetch(member.id);
-greetingHandler.sendWelcome(freshMember, inviterData);
+  greetingHandler.sendWelcome(freshMember, inviterData);
+};
